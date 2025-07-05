@@ -1,0 +1,79 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-df93c7eb5e01644a1d16.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "ChronoVault",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "ChronoVault::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ChronoVault-Debug-2b294bc0f1d47ad38fcb.json",
+					"name" : "ChronoVault",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ChronoVault_autogen::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ChronoVault_autogen-Debug-c7526ed8efea1448e74b.json",
+					"name" : "ChronoVault_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ChronoVault_autogen_timestamp_deps::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ChronoVault_autogen_timestamp_deps-Debug-6f1fb260a7ce6c893600.json",
+					"name" : "ChronoVault_autogen_timestamp_deps",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "D:/github/projects/ChronoVault/out/build/debug",
+		"source" : "D:/github/projects/ChronoVault"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 8
+	}
+}
