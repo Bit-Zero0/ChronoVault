@@ -24,6 +24,10 @@ public:
 
     // 用任务数据填充UI
     void displayTask(const TodoItem& task);
+    QUuid getCurrentTaskId() const;
+
+
+
 
 signals:
     // 当UI控件被用户修改时，发射信号通知 MainWindow
@@ -37,6 +41,8 @@ signals:
     void subTaskUpdated(const QUuid& taskId, const SubTask& updatedSubTask);
     void subTaskDeleted(const QUuid& taskId, const QUuid& subTaskId);
     void subTaskPromoted(const QUuid& taskId, const QUuid& subTaskId);
+    void dueDateChanged(const QUuid& taskId, const QDateTime& dueDate);
+
 
 
 private slots:
@@ -52,6 +58,8 @@ private slots:
     void showSubTaskMenu(const QPoint& pos, const SubTask& subTask); // 新增：通用的菜单显示函数
     void handleSubTaskDataUpdate(const SubTask& updatedSubTask);
     void handleSubTaskOptionsClicked(const QPoint& pos, const SubTask& subTask); // New slot
+
+    void onDueDateButtonClicked();
 
 
 private:
@@ -70,4 +78,10 @@ private:
     QLabel* m_creationDateLabel;
     QPushButton* m_deleteButton;
     QToolButton* m_closeButton;
+
+protected:
+    // --- 新增：重写 eventFilter 来捕获子控件事件 ---
+    bool eventFilter(QObject* watched, QEvent* event) override;
 };
+
+

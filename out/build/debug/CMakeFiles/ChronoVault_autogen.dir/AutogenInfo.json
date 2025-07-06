@@ -284,6 +284,12 @@
 			null
 		],
 		[
+			"D:/github/projects/ChronoVault/gui/completedheaderwidget.h",
+			"MU",
+			"DMHXEJ42XS/moc_completedheaderwidget.cpp",
+			null
+		],
+		[
 			"D:/github/projects/ChronoVault/gui/subtaskitemwidget.h",
 			"MU",
 			"DMHXEJ42XS/moc_subtaskitemwidget.cpp",
@@ -358,6 +364,8 @@
 	"SETTINGS_FILE" : "D:/github/projects/ChronoVault/out/build/debug/CMakeFiles/ChronoVault_autogen.dir/AutogenUsed.txt",
 	"SOURCES" : 
 	[
+		[ "D:/github/projects/ChronoVault/core/TodoItem.cpp", "MU", null ],
+		[ "D:/github/projects/ChronoVault/core/TodoList.cpp", "MU", null ],
 		[ "D:/github/projects/ChronoVault/gui/MainWindow.cpp", "MU", null ],
 		[
 			"D:/github/projects/ChronoVault/gui/TodoListNameWidget.cpp",
@@ -365,6 +373,11 @@
 			null
 		],
 		[ "D:/github/projects/ChronoVault/gui/addtododialog.cpp", "MU", null ],
+		[
+			"D:/github/projects/ChronoVault/gui/completedheaderwidget.cpp",
+			"MU",
+			null
+		],
 		[
 			"D:/github/projects/ChronoVault/gui/subtaskitemwidget.cpp",
 			"MU",

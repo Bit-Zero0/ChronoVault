@@ -13,6 +13,12 @@
 #include <QInputDialog>
 #include <QToolButton>
 #include <QCursor>
+#include <QEvent>
+#include <QCalendarWidget>
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QDialogButtonBox>
+#include <QDateTimeEdit>
 
 TaskDetailWidget::TaskDetailWidget(QWidget* parent)
     : QWidget(parent), m_currentTask("")
@@ -20,11 +26,13 @@ TaskDetailWidget::TaskDetailWidget(QWidget* parent)
     setupUi();
 
     connect(m_titleLineEdit, &QLineEdit::editingFinished, this, &TaskDetailWidget::onTitleEditingFinished);
-    connect(m_notesTextEdit, &QTextEdit::textChanged, this, &TaskDetailWidget::onNotesChanged);
+    //connect(m_notesTextEdit, &QTextEdit::textChanged, this, &TaskDetailWidget::onNotesChanged);
+    m_notesTextEdit->installEventFilter(this);
     connect(m_completedCheckBox, &QCheckBox::stateChanged, this, &TaskDetailWidget::onCompletedStateChanged);
     connect(m_deleteButton, &QPushButton::clicked, this, &TaskDetailWidget::onDeleteButtonClicked);
     connect(m_addSubTaskLineEdit, &QLineEdit::returnPressed, this, &TaskDetailWidget::onAddSubTaskLineEditReturnPressed);
     connect(m_closeButton, &QToolButton::clicked, this, &TaskDetailWidget::closeRequested);
+    connect(m_dueDateButton, &QPushButton::clicked, this, &TaskDetailWidget::onDueDateButtonClicked);
 }
 
 void TaskDetailWidget::setupUi() {
@@ -84,6 +92,22 @@ void TaskDetailWidget::setupUi() {
 }
 
 
+bool TaskDetailWidget::eventFilter(QObject* watched, QEvent* event)
+{
+    // 检查事件是否发生在我们的备注输入框上
+    if (watched == m_notesTextEdit) {
+        // 检查事件类型是否是“失去焦点”
+        if (event->type() == QEvent::FocusOut) {
+            // 如果是，则调用我们之前写好的 onNotesChanged 函数来处理保存逻辑
+            onNotesChanged();
+        }
+    }
+    // 将事件交还给父类进行默认处理
+    return QWidget::eventFilter(watched, event);
+}
+
+
+
 void TaskDetailWidget::displayTask(const TodoItem& task) {
     m_currentTask = task;
     bool oldSignalsState = signalsBlocked();
@@ -93,11 +117,15 @@ void TaskDetailWidget::displayTask(const TodoItem& task) {
     m_completedCheckBox->setChecked(task.isCompleted());
     m_notesTextEdit->setText(task.description());
     if (task.dueDate().isValid()) {
-        m_dueDateButton->setText(task.dueDate().toString("yyyy-MM-dd"));
+        m_dueDateButton->setText("截止于 " + task.dueDate().toString("yyyy-MM-dd HH:mm")); // 显示时间
+            m_dueDateButton->setStyleSheet("color: blue;");
     } else {
         m_dueDateButton->setText("添加截止日期");
+        m_dueDateButton->setStyleSheet("");
     }
+
     m_creationDateLabel->setText("创建于 " + task.creationDate().toString("yyyy年M月d日"));
+
 
     m_subTasksListWidget->clear();
     for(const auto& subtask : task.subTasks()) {
@@ -127,7 +155,13 @@ void TaskDetailWidget::handleSubTaskDataUpdate(const SubTask& updatedSubTask) {
 }
 
 
-
+QUuid TaskDetailWidget::getCurrentTaskId() const {
+    // 如果当前标题为空，可能代表没有有效任务，返回空UUID
+    if (m_titleLineEdit->text().isEmpty() && !m_currentTask.id().isNull()){
+        return m_currentTask.id();
+    }
+    return m_currentTask.id();
+}
 
 void TaskDetailWidget::onTitleEditingFinished() {
     if (m_currentTask.title() != m_titleLineEdit->text()) {
@@ -242,5 +276,42 @@ void TaskDetailWidget::showSubTaskMenu(const QPoint& pos, const SubTask& subTask
     else if (selectedAction == promoteAction) {
         // 对于“提升”，我们也发射一个信号，通知上层(MainWindow)来处理
         emit subTaskPromoted(m_currentTask.id(), subTask.id);
+    }
+}
+
+// --- 在 TaskDetailWidget.cpp 文件末尾，添加新槽函数的实现 ---
+void TaskDetailWidget::onDueDateButtonClicked() {
+    QDialog dialog(this);
+    dialog.setWindowTitle("选择截止日期和时间");
+
+    // 1. 使用 QDateTimeEdit 代替 QCalendarWidget
+    QDateTimeEdit* dateTimeEdit = new QDateTimeEdit();
+    dateTimeEdit->setCalendarPopup(true); // 允许弹出日历选择日期
+    dateTimeEdit->setDisplayFormat("yyyy-MM-dd HH:mm"); // 设置显示格式
+
+    // 如果当前任务已有截止日期，则在控件上显示它
+    if (m_currentTask.dueDate().isValid()) {
+        dateTimeEdit->setDateTime(m_currentTask.dueDate());
+    } else {
+        // 默认显示当前日期时间的结束
+        QDateTime now = QDateTime::currentDateTime();
+        dateTimeEdit->setDateTime(QDateTime(now.date(), QTime(23, 59)));
+    }
+
+    QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel | QDialogButtonBox::Reset);
+    connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    connect(buttonBox->button(QDialogButtonBox::Reset), &QPushButton::clicked, [&](){
+        emit dueDateChanged(m_currentTask.id(), QDateTime());
+        dialog.accept();
+    });
+
+    QVBoxLayout* layout = new QVBoxLayout(&dialog);
+    layout->addWidget(dateTimeEdit);
+    layout->addWidget(buttonBox);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        QDateTime selectedDateTime = dateTimeEdit->dateTime();
+        emit dueDateChanged(m_currentTask.id(), selectedDateTime);
     }
 }

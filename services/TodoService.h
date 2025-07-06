@@ -30,7 +30,7 @@ public:
 
 
     TodoItem* findTodoById(const QUuid& listId, const QUuid& todoId);
-
+    TodoList* findListById(const QUuid& listId);
 
 
 
@@ -48,11 +48,15 @@ private:
     TodoService& operator=(const TodoService&) = delete;
 
 
-    TodoList* findListById(const QUuid& listId);
-
-
     // 数据存储
     QList<TodoList> m_lists;
+
+
+
+    void saveData() const;
+    void loadData();
+    QString m_savePath;
+
 
     void loadInitialData(); // 用于加载一些测试数据
 };

@@ -59,6 +59,9 @@ private slots:
     void handleTaskTitleChange(const QUuid& taskId, const QString& newTitle);
     void handleListNameChange(const QUuid& listId, const QString& newName);
 
+
+    void handleDueDateChange(const QUuid& taskId, const QDateTime& dueDate);
+
 private:
     // -- 私有辅助函数 --
     void setupUi();
@@ -87,6 +90,7 @@ private:
     QLabel* m_currentListTitleLabel;
     QListWidget* m_taskItemsWidget;
     QLineEdit* m_addTodoLineEdit;
+    bool m_isCompletedSectionExpanded;
 
     // 右侧 -> 右边 (任务详情区)
     TaskDetailWidget* m_taskDetailWidget;

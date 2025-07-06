@@ -2,7 +2,10 @@
 #include <QString>
 #include <QList>
 #include <QUuid>
+#include <QJsonObject>
+
 #include "core/TodoItem.h"
+
 
 class TodoList {
 public:
@@ -14,4 +17,7 @@ public:
 
     explicit TodoList(const QString& name = "New List")
         : id(QUuid::createUuid()), name(name) {}
+
+    QJsonObject toJson() const;
+    static TodoList fromJson(const QJsonObject& json);
 };

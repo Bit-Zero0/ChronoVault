@@ -26,6 +26,7 @@ public:
     const QDateTime& reminderDate() const { return m_reminderDate; }
     bool isCompleted() const { return m_isCompleted; }
     const QList<SubTask>& subTasks() const { return m_subTasks; }
+    const QDateTime& completionDate() const { return m_completionDate; }
 
     // Setters
     void setTitle(const QString& title) { m_title = title; }
@@ -34,6 +35,12 @@ public:
     void setReminderDate(const QDateTime& reminderDate) { m_reminderDate = reminderDate; }
     void setCompleted(bool completed) { m_isCompleted = completed; }
     QList<SubTask>& subTasks() { return m_subTasks; } // 提供一个非const引用版本以供修改
+    void setCompletionDate(const QDateTime& completionDate) { m_completionDate = completionDate; }
+
+
+
+    QJsonObject toJson() const;
+    static TodoItem fromJson(const QJsonObject& json);
 
 private:
     QUuid m_id;
@@ -46,4 +53,5 @@ private:
 
     bool m_isCompleted;
     QList<SubTask> m_subTasks;
+    QDateTime m_completionDate;
 };

@@ -130,6 +130,33 @@ build CMakeFiles\ChronoVault.dir\gui\TodoListNameWidget.cpp.obj: CXX_COMPILER__C
   TARGET_COMPILE_PDB = CMakeFiles\ChronoVault.dir\
   TARGET_PDB = ChronoVault.pdb
 
+build CMakeFiles\ChronoVault.dir\core\TodoItem.cpp.obj: CXX_COMPILER__ChronoVault_unscanned_Debug D$:\github\projects\ChronoVault\core\TodoItem.cpp || cmake_object_order_depends_target_ChronoVault
+  DEFINES = -DMINGW_HAS_SECURE_API=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NEEDS_QMAIN -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
+  FLAGS = -DQT_QML_DEBUG /MDd /Zi /Ob0 /Od /RTC1 -std:c++17
+  INCLUDES = -ID:\github\projects\ChronoVault\out\build\debug\ChronoVault_autogen\include -ID:\github\projects\ChronoVault -external:IC:\Qt\6.2.4\mingw_64\include\QtCore -external:IC:\Qt\6.2.4\mingw_64\include -external:IC:\Qt\6.2.4\mingw_64\mkspecs\win32-g++ -external:IC:\Qt\6.2.4\mingw_64\include\QtWidgets -external:IC:\Qt\6.2.4\mingw_64\include\QtGui -external:W0
+  OBJECT_DIR = CMakeFiles\ChronoVault.dir
+  OBJECT_FILE_DIR = CMakeFiles\ChronoVault.dir\core
+  TARGET_COMPILE_PDB = CMakeFiles\ChronoVault.dir\
+  TARGET_PDB = ChronoVault.pdb
+
+build CMakeFiles\ChronoVault.dir\core\TodoList.cpp.obj: CXX_COMPILER__ChronoVault_unscanned_Debug D$:\github\projects\ChronoVault\core\TodoList.cpp || cmake_object_order_depends_target_ChronoVault
+  DEFINES = -DMINGW_HAS_SECURE_API=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NEEDS_QMAIN -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
+  FLAGS = -DQT_QML_DEBUG /MDd /Zi /Ob0 /Od /RTC1 -std:c++17
+  INCLUDES = -ID:\github\projects\ChronoVault\out\build\debug\ChronoVault_autogen\include -ID:\github\projects\ChronoVault -external:IC:\Qt\6.2.4\mingw_64\include\QtCore -external:IC:\Qt\6.2.4\mingw_64\include -external:IC:\Qt\6.2.4\mingw_64\mkspecs\win32-g++ -external:IC:\Qt\6.2.4\mingw_64\include\QtWidgets -external:IC:\Qt\6.2.4\mingw_64\include\QtGui -external:W0
+  OBJECT_DIR = CMakeFiles\ChronoVault.dir
+  OBJECT_FILE_DIR = CMakeFiles\ChronoVault.dir\core
+  TARGET_COMPILE_PDB = CMakeFiles\ChronoVault.dir\
+  TARGET_PDB = ChronoVault.pdb
+
+build CMakeFiles\ChronoVault.dir\gui\completedheaderwidget.cpp.obj: CXX_COMPILER__ChronoVault_unscanned_Debug D$:\github\projects\ChronoVault\gui\completedheaderwidget.cpp || cmake_object_order_depends_target_ChronoVault
+  DEFINES = -DMINGW_HAS_SECURE_API=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NEEDS_QMAIN -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
+  FLAGS = -DQT_QML_DEBUG /MDd /Zi /Ob0 /Od /RTC1 -std:c++17
+  INCLUDES = -ID:\github\projects\ChronoVault\out\build\debug\ChronoVault_autogen\include -ID:\github\projects\ChronoVault -external:IC:\Qt\6.2.4\mingw_64\include\QtCore -external:IC:\Qt\6.2.4\mingw_64\include -external:IC:\Qt\6.2.4\mingw_64\mkspecs\win32-g++ -external:IC:\Qt\6.2.4\mingw_64\include\QtWidgets -external:IC:\Qt\6.2.4\mingw_64\include\QtGui -external:W0
+  OBJECT_DIR = CMakeFiles\ChronoVault.dir
+  OBJECT_FILE_DIR = CMakeFiles\ChronoVault.dir\gui
+  TARGET_COMPILE_PDB = CMakeFiles\ChronoVault.dir\
+  TARGET_PDB = ChronoVault.pdb
+
 build CMakeFiles\ChronoVault.dir\ChronoVault_autogen\EWIEGA46WW\qrc_icons.cpp.obj: CXX_COMPILER__ChronoVault_unscanned_Debug D$:\github\projects\ChronoVault\out\build\debug\ChronoVault_autogen\EWIEGA46WW\qrc_icons.cpp || cmake_object_order_depends_target_ChronoVault
   DEFINES = -DMINGW_HAS_SECURE_API=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NEEDS_QMAIN -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
   FLAGS = -DQT_QML_DEBUG /MDd /Zi /Ob0 /Od /RTC1 -std:c++17
@@ -147,7 +174,7 @@ build CMakeFiles\ChronoVault.dir\ChronoVault_autogen\EWIEGA46WW\qrc_icons.cpp.ob
 #############################################
 # Link the executable ChronoVault.exe
 
-build ChronoVault.exe: CXX_EXECUTABLE_LINKER__ChronoVault_Debug CMakeFiles\ChronoVault.dir\ChronoVault_autogen\mocs_compilation.cpp.obj CMakeFiles\ChronoVault.dir\main.cpp.obj CMakeFiles\ChronoVault.dir\gui\addtododialog.cpp.obj CMakeFiles\ChronoVault.dir\gui\MainWindow.cpp.obj CMakeFiles\ChronoVault.dir\gui\todolistitemwidget.cpp.obj CMakeFiles\ChronoVault.dir\services\TodoService.cpp.obj CMakeFiles\ChronoVault.dir\gui\taskdetailwidget.cpp.obj CMakeFiles\ChronoVault.dir\gui\subtaskitemwidget.cpp.obj CMakeFiles\ChronoVault.dir\gui\TodoListNameWidget.cpp.obj CMakeFiles\ChronoVault.dir\ChronoVault_autogen\EWIEGA46WW\qrc_icons.cpp.obj | C$:\Qt\6.2.4\mingw_64\lib\libQt6Widgets.a C$:\Qt\6.2.4\mingw_64\lib\libQt6Gui.a C$:\Qt\6.2.4\mingw_64\lib\libQt6Core.a C$:\Qt\6.2.4\mingw_64\lib\libQt6EntryPoint.a || ChronoVault_autogen ChronoVault_autogen_timestamp_deps
+build ChronoVault.exe: CXX_EXECUTABLE_LINKER__ChronoVault_Debug CMakeFiles\ChronoVault.dir\ChronoVault_autogen\mocs_compilation.cpp.obj CMakeFiles\ChronoVault.dir\main.cpp.obj CMakeFiles\ChronoVault.dir\gui\addtododialog.cpp.obj CMakeFiles\ChronoVault.dir\gui\MainWindow.cpp.obj CMakeFiles\ChronoVault.dir\gui\todolistitemwidget.cpp.obj CMakeFiles\ChronoVault.dir\services\TodoService.cpp.obj CMakeFiles\ChronoVault.dir\gui\taskdetailwidget.cpp.obj CMakeFiles\ChronoVault.dir\gui\subtaskitemwidget.cpp.obj CMakeFiles\ChronoVault.dir\gui\TodoListNameWidget.cpp.obj CMakeFiles\ChronoVault.dir\core\TodoItem.cpp.obj CMakeFiles\ChronoVault.dir\core\TodoList.cpp.obj CMakeFiles\ChronoVault.dir\gui\completedheaderwidget.cpp.obj CMakeFiles\ChronoVault.dir\ChronoVault_autogen\EWIEGA46WW\qrc_icons.cpp.obj | C$:\Qt\6.2.4\mingw_64\lib\libQt6Widgets.a C$:\Qt\6.2.4\mingw_64\lib\libQt6Gui.a C$:\Qt\6.2.4\mingw_64\lib\libQt6Core.a C$:\Qt\6.2.4\mingw_64\lib\libQt6EntryPoint.a || ChronoVault_autogen ChronoVault_autogen_timestamp_deps
   FLAGS = -DQT_QML_DEBUG /MDd /Zi /Ob0 /Od /RTC1
   LINK_FLAGS = /machine:x64 /debug /INCREMENTAL /subsystem:windows
   LINK_LIBRARIES = C:\Qt\6.2.4\mingw_64\lib\libQt6Widgets.a  C:\Qt\6.2.4\mingw_64\lib\libQt6Gui.a  C:\Qt\6.2.4\mingw_64\lib\libQt6Core.a  mpr.lib  userenv.lib  mingw32.lib  C:\Qt\6.2.4\mingw_64\lib\libQt6EntryPoint.a  shell32.lib  d3d11.lib  dxgi.lib  dxguid.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib

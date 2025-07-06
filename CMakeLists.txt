@@ -47,6 +47,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         gui/taskdetailwidget.h gui/taskdetailwidget.cpp
         gui/subtaskitemwidget.h gui/subtaskitemwidget.cpp
         gui/TodoListNameWidget.h gui/TodoListNameWidget.cpp
+        core/TodoItem.cpp
+        core/TodoList.cpp
+        gui/completedheaderwidget.h gui/completedheaderwidget.cpp
     )
 else()
     add_executable(ChronoVault
