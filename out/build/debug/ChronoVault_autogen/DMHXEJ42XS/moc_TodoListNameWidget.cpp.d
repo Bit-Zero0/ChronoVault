@@ -1,10 +1,5 @@
-D:/github/projects/ChronoVault/out/build/debug/ChronoVault_autogen/DMHXEJ42XS/moc_TaskDetailWidget.cpp: D:/github/projects/ChronoVault/gui/TaskDetailWidget.h \
-  C:/Qt/6.2.4/mingw_64/include/QtCore/QDateTime \
-  C:/Qt/6.2.4/mingw_64/include/QtCore/QJsonObject \
-  C:/Qt/6.2.4/mingw_64/include/QtCore/QList \
-  C:/Qt/6.2.4/mingw_64/include/QtCore/QString \
+D:/github/projects/ChronoVault/out/build/debug/ChronoVault_autogen/DMHXEJ42XS/moc_TodoListNameWidget.cpp: D:/github/projects/ChronoVault/gui/TodoListNameWidget.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/QUuid \
-  C:/Qt/6.2.4/mingw_64/include/QtCore/qabstractitemmodel.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qalgorithms.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qanystringview.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qarraydata.h \
@@ -17,9 +12,6 @@ D:/github/projects/ChronoVault/out/build/debug/ChronoVault_autogen/DMHXEJ42XS/mo
   C:/Qt/6.2.4/mingw_64/include/QtCore/qbytearrayalgorithms.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qbytearraylist.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qbytearrayview.h \
-  C:/Qt/6.2.4/mingw_64/include/QtCore/qcalendar.h \
-  C:/Qt/6.2.4/mingw_64/include/QtCore/qcborcommon.h \
-  C:/Qt/6.2.4/mingw_64/include/QtCore/qcborvalue.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qchar.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qcompare.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qcompilerdetection.h \
@@ -27,26 +19,17 @@ D:/github/projects/ChronoVault/out/build/debug/ChronoVault_autogen/DMHXEJ42XS/mo
   C:/Qt/6.2.4/mingw_64/include/QtCore/qcontainerfwd.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qcontainerinfo.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qcontainertools_impl.h \
-  C:/Qt/6.2.4/mingw_64/include/QtCore/qcontiguouscache.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qdatastream.h \
-  C:/Qt/6.2.4/mingw_64/include/QtCore/qdatetime.h \
-  C:/Qt/6.2.4/mingw_64/include/QtCore/qdebug.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qflags.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qglobal.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qglobalstatic.h \
-  C:/Qt/6.2.4/mingw_64/include/QtCore/qhash.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qhashfunctions.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qiodevicebase.h \
-  C:/Qt/6.2.4/mingw_64/include/QtCore/qitemselectionmodel.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qiterable.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qiterator.h \
-  C:/Qt/6.2.4/mingw_64/include/QtCore/qjsonobject.h \
-  C:/Qt/6.2.4/mingw_64/include/QtCore/qjsonvalue.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qline.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qlist.h \
-  C:/Qt/6.2.4/mingw_64/include/QtCore/qlocale.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qlogging.h \
-  C:/Qt/6.2.4/mingw_64/include/QtCore/qmap.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qmargins.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qmath.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qmetacontainer.h \
@@ -62,18 +45,14 @@ D:/github/projects/ChronoVault/out/build/debug/ChronoVault_autogen/DMHXEJ42XS/mo
   C:/Qt/6.2.4/mingw_64/include/QtCore/qprocessordetection.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qrect.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qrefcount.h \
-  C:/Qt/6.2.4/mingw_64/include/QtCore/qregularexpression.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qscopedpointer.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qscopeguard.h \
-  C:/Qt/6.2.4/mingw_64/include/QtCore/qset.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qshareddata.h \
-  C:/Qt/6.2.4/mingw_64/include/QtCore/qshareddata_impl.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qsharedpointer.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qsharedpointer_impl.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qsize.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qstring.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qstringalgorithms.h \
-  C:/Qt/6.2.4/mingw_64/include/QtCore/qstringconverter.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qstringlist.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qstringliteral.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qstringmatcher.h \
@@ -83,13 +62,10 @@ D:/github/projects/ChronoVault/out/build/debug/ChronoVault_autogen/DMHXEJ42XS/mo
   C:/Qt/6.2.4/mingw_64/include/QtCore/qsystemdetection.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qtaggedpointer.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qtcore-config.h \
-  C:/Qt/6.2.4/mingw_64/include/QtCore/qtextstream.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qtmetamacros.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qtypeinfo.h \
-  C:/Qt/6.2.4/mingw_64/include/QtCore/qurl.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qutf8stringview.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/quuid.h \
-  C:/Qt/6.2.4/mingw_64/include/QtCore/qvariant.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qvarlengtharray.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qversiontagging.h \
   C:/Qt/6.2.4/mingw_64/include/QtGui/qbitmap.h \
@@ -99,7 +75,6 @@ D:/github/projects/ChronoVault/out/build/debug/ChronoVault_autogen/DMHXEJ42XS/mo
   C:/Qt/6.2.4/mingw_64/include/QtGui/qfont.h \
   C:/Qt/6.2.4/mingw_64/include/QtGui/qfontinfo.h \
   C:/Qt/6.2.4/mingw_64/include/QtGui/qfontmetrics.h \
-  C:/Qt/6.2.4/mingw_64/include/QtGui/qicon.h \
   C:/Qt/6.2.4/mingw_64/include/QtGui/qimage.h \
   C:/Qt/6.2.4/mingw_64/include/QtGui/qkeysequence.h \
   C:/Qt/6.2.4/mingw_64/include/QtGui/qpaintdevice.h \
@@ -113,29 +88,10 @@ D:/github/projects/ChronoVault/out/build/debug/ChronoVault_autogen/DMHXEJ42XS/mo
   C:/Qt/6.2.4/mingw_64/include/QtGui/qtgui-config.h \
   C:/Qt/6.2.4/mingw_64/include/QtGui/qtguiglobal.h \
   C:/Qt/6.2.4/mingw_64/include/QtGui/qtransform.h \
-  C:/Qt/6.2.4/mingw_64/include/QtGui/qvalidator.h \
   C:/Qt/6.2.4/mingw_64/include/QtGui/qwindowdefs.h \
   C:/Qt/6.2.4/mingw_64/include/QtGui/qwindowdefs_win.h \
-  C:/Qt/6.2.4/mingw_64/include/QtWidgets/QListWidgetItem \
   C:/Qt/6.2.4/mingw_64/include/QtWidgets/QWidget \
-  C:/Qt/6.2.4/mingw_64/include/QtWidgets/qabstractitemdelegate.h \
-  C:/Qt/6.2.4/mingw_64/include/QtWidgets/qabstractitemview.h \
-  C:/Qt/6.2.4/mingw_64/include/QtWidgets/qabstractscrollarea.h \
-  C:/Qt/6.2.4/mingw_64/include/QtWidgets/qabstractslider.h \
-  C:/Qt/6.2.4/mingw_64/include/QtWidgets/qabstractspinbox.h \
-  C:/Qt/6.2.4/mingw_64/include/QtWidgets/qframe.h \
-  C:/Qt/6.2.4/mingw_64/include/QtWidgets/qlistview.h \
-  C:/Qt/6.2.4/mingw_64/include/QtWidgets/qlistwidget.h \
-  C:/Qt/6.2.4/mingw_64/include/QtWidgets/qrubberband.h \
   C:/Qt/6.2.4/mingw_64/include/QtWidgets/qsizepolicy.h \
-  C:/Qt/6.2.4/mingw_64/include/QtWidgets/qslider.h \
-  C:/Qt/6.2.4/mingw_64/include/QtWidgets/qstyle.h \
-  C:/Qt/6.2.4/mingw_64/include/QtWidgets/qstyleoption.h \
-  C:/Qt/6.2.4/mingw_64/include/QtWidgets/qtabbar.h \
-  C:/Qt/6.2.4/mingw_64/include/QtWidgets/qtabwidget.h \
   C:/Qt/6.2.4/mingw_64/include/QtWidgets/qtwidgets-config.h \
   C:/Qt/6.2.4/mingw_64/include/QtWidgets/qtwidgetsglobal.h \
-  C:/Qt/6.2.4/mingw_64/include/QtWidgets/qwidget.h \
-  D:/github/projects/ChronoVault/core/SubTask.h \
-  D:/github/projects/ChronoVault/core/TodoItem.h \
-  D:/github/projects/ChronoVault/gui/SubTaskItemWidget.h
+  C:/Qt/6.2.4/mingw_64/include/QtWidgets/qwidget.h

@@ -33,7 +33,7 @@ private slots:
 
 private:
     void setupUi(); // <-- 【重要】添加这一行缺失的声明
-    void setCompleted(bool completed);
+    //void setCompleted(bool completed);
 
     TodoItem m_item;
 

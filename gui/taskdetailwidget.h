@@ -43,7 +43,7 @@ signals:
     void subTaskPromoted(const QUuid& taskId, const QUuid& subTaskId);
     void dueDateChanged(const QUuid& taskId, const QDateTime& dueDate);
 
-
+    void reminderDateChanged(const QUuid& taskId, const QDateTime& reminderDate);
 
 private slots:
     void onTitleEditingFinished();
@@ -61,6 +61,7 @@ private slots:
 
     void onDueDateButtonClicked();
 
+    void onRemindMeButtonClicked();
 
 private:
     void setupUi();

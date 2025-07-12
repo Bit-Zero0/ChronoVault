@@ -1,5 +1,6 @@
-D:/github/projects/ChronoVault/out/build/debug/ChronoVault_autogen/DMHXEJ42XS/moc_todolistitemwidget.cpp: D:/github/projects/ChronoVault/gui/todolistitemwidget.h \
+D:/github/projects/ChronoVault/out/build/debug/ChronoVault_autogen/DMHXEJ42XS/moc_TodoListItemWidget.cpp: D:/github/projects/ChronoVault/gui/TodoListItemWidget.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/QDateTime \
+  C:/Qt/6.2.4/mingw_64/include/QtCore/QJsonObject \
   C:/Qt/6.2.4/mingw_64/include/QtCore/QList \
   C:/Qt/6.2.4/mingw_64/include/QtCore/QString \
   C:/Qt/6.2.4/mingw_64/include/QtCore/QUuid \
@@ -16,6 +17,8 @@ D:/github/projects/ChronoVault/out/build/debug/ChronoVault_autogen/DMHXEJ42XS/mo
   C:/Qt/6.2.4/mingw_64/include/QtCore/qbytearraylist.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qbytearrayview.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qcalendar.h \
+  C:/Qt/6.2.4/mingw_64/include/QtCore/qcborcommon.h \
+  C:/Qt/6.2.4/mingw_64/include/QtCore/qcborvalue.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qchar.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qcompare.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qcompilerdetection.h \
@@ -35,6 +38,8 @@ D:/github/projects/ChronoVault/out/build/debug/ChronoVault_autogen/DMHXEJ42XS/mo
   C:/Qt/6.2.4/mingw_64/include/QtCore/qiodevicebase.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qiterable.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qiterator.h \
+  C:/Qt/6.2.4/mingw_64/include/QtCore/qjsonobject.h \
+  C:/Qt/6.2.4/mingw_64/include/QtCore/qjsonvalue.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qline.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qlist.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qlocale.h \
@@ -55,6 +60,7 @@ D:/github/projects/ChronoVault/out/build/debug/ChronoVault_autogen/DMHXEJ42XS/mo
   C:/Qt/6.2.4/mingw_64/include/QtCore/qprocessordetection.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qrect.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qrefcount.h \
+  C:/Qt/6.2.4/mingw_64/include/QtCore/qregularexpression.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qscopedpointer.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qscopeguard.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qset.h \
@@ -78,6 +84,7 @@ D:/github/projects/ChronoVault/out/build/debug/ChronoVault_autogen/DMHXEJ42XS/mo
   C:/Qt/6.2.4/mingw_64/include/QtCore/qtextstream.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qtmetamacros.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qtypeinfo.h \
+  C:/Qt/6.2.4/mingw_64/include/QtCore/qurl.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qutf8stringview.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/quuid.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qvariant.h \

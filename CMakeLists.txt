@@ -9,67 +9,67 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+# 使用一个清晰、完整的命令找到所有需要的 Qt6 模块
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Concurrent)
 
-# 所有的源文件路径都是相对于当前 CMakeLists.txt 的，所以不需要前缀
+# 定义源文件列表
 set(PROJECT_SOURCES
     main.cpp
+    # Core
     core/TodoItem.h
-    gui/addtododialog.cpp
-    gui/MainWindow.cpp
-    gui/todolistitemwidget.cpp
-
-    core/TodoItem.h
+    core/TodoItem.cpp
+    core/TodoList.h
+    core/TodoList.cpp
     core/Anniversary.h
     core/SharedFile.h
-    core/TodoList.h             # <-- 添加
-
     # Services
-    services/TodoService.h       # <-- 添加
-    services/TodoService.cpp     # <-- 添加
-
-
+    services/TodoService.h
+    services/TodoService.cpp
+    # GUI
+    gui/MainWindow.h
+    gui/MainWindow.cpp
+    gui/addtododialog.cpp
+    gui/todolistitemwidget.h
+    gui/todolistitemwidget.cpp
+    gui/taskdetailwidget.h
+    gui/taskdetailwidget.cpp
+    gui/subtaskitemwidget.h
+    gui/subtaskitemwidget.cpp
+    gui/TodoListNameWidget.h
+    gui/TodoListNameWidget.cpp
+    gui/completedheaderwidget.h
+    gui/completedheaderwidget.cpp
 )
 
-# 资源文件也一样
+# 定义资源文件列表
 set(PROJECT_RESOURCES
     icons.qrc
 )
 
-# 根据Qt版本创建可执行文件
-if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(ChronoVault
-        MANUAL_FINALIZATION
-        ${PROJECT_SOURCES}
-        ${PROJECT_RESOURCES}
-        core/TodoList.h
-        gui/taskdetailwidget.h gui/taskdetailwidget.cpp
-        gui/subtaskitemwidget.h gui/subtaskitemwidget.cpp
-        gui/TodoListNameWidget.h gui/TodoListNameWidget.cpp
-        core/TodoItem.cpp
-        core/TodoList.cpp
-        gui/completedheaderwidget.h gui/completedheaderwidget.cpp
-    )
-else()
-    add_executable(ChronoVault
-        ${PROJECT_SOURCES}
-        ${PROJECT_RESOURCES}
-    )
-endif()
+# 创建可执行文件
+qt_add_executable(ChronoVault
+    MANUAL_FINALIZATION
+    ${PROJECT_SOURCES}
+    ${PROJECT_RESOURCES}
+)
 
-# 核心步骤：将当前目录 (即 CMakeLists.txt 所在的目录) 添加到头文件搜索路径中
+# 添加头文件搜索路径
 target_include_directories(ChronoVault PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# 链接Qt库
-target_link_libraries(ChronoVault PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+# 链接所有需要的 Qt 库
+target_link_libraries(ChronoVault PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
+    Qt6::Concurrent
+)
 
+# --- 以下为平台相关的设置 ---
 
-# --- 以下为平台相关的设置，保持不变 ---
-
-if(${QT_VERSION} VERSION_LESS 6.1.0)
+# 【已修正】使用正确的 Qt6_VERSION 变量进行版本判断
+if(Qt6_VERSION VERSION_LESS "6.1.0")
   set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.ChronoVault)
 endif()
 set_target_properties(ChronoVault PROPERTIES

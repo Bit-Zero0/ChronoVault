@@ -97,32 +97,33 @@ void MainWindow::setupUi() {
 }
 
 void MainWindow::setupConnections() {
-    // 列表选择
     connect(m_listSelectionWidget, &QListWidget::currentItemChanged, this, &MainWindow::onCurrentListChanged);
     connect(m_listSelectionWidget, &QListWidget::customContextMenuRequested, this, &MainWindow::showListContextMenu);
     connect(m_addNewListButton, &QToolButton::clicked, this, &MainWindow::onAddNewList);
-
-    // 任务选择
     connect(m_taskItemsWidget, &QListWidget::itemSelectionChanged, this, &MainWindow::onTaskSelectionChanged);
     connect(m_taskItemsWidget, &QListWidget::customContextMenuRequested, this, &MainWindow::showTaskContextMenu);
     connect(m_taskItemsWidget, &QListWidget::itemDoubleClicked, this, &MainWindow::handleTaskDoubleClick);
     connect(m_addTodoLineEdit, &QLineEdit::returnPressed, this, &MainWindow::onAddNewTodo);
 
-    // 详情页信号
+    // 连接所有来自详情页的信号
     connect(m_taskDetailWidget, &TaskDetailWidget::taskUpdated, this, &MainWindow::handleTaskUpdate);
+    connect(m_taskDetailWidget, &TaskDetailWidget::taskDeleted, this, &MainWindow::handleTaskDelete);
     connect(m_taskDetailWidget, &TaskDetailWidget::addSubTask, this, &MainWindow::handleAddSubTask);
     connect(m_taskDetailWidget, &TaskDetailWidget::subTaskStateChanged, this, &MainWindow::handleSubTaskStateChange);
     connect(m_taskDetailWidget, &TaskDetailWidget::subTaskUpdated, this, &MainWindow::handleSubTaskUpdate);
-    connect(m_taskDetailWidget, &TaskDetailWidget::closeRequested, this, &MainWindow::onDetailCloseRequested);
-    connect(m_taskDetailWidget, &TaskDetailWidget::dueDateChanged, this, &MainWindow::handleDueDateChange);
-    // 【补上缺失的连接】
-    connect(m_taskDetailWidget, &TaskDetailWidget::taskDeleted, this, &MainWindow::handleTaskDelete);
     connect(m_taskDetailWidget, &TaskDetailWidget::subTaskDeleted, this, &MainWindow::handleSubTaskDelete);
     connect(m_taskDetailWidget, &TaskDetailWidget::subTaskPromoted, this, &MainWindow::handleSubTaskPromote);
+    connect(m_taskDetailWidget, &TaskDetailWidget::closeRequested, this, &MainWindow::onDetailCloseRequested);
+    connect(m_taskDetailWidget, &TaskDetailWidget::dueDateChanged, this, &MainWindow::handleDueDateChange);
+    connect(m_taskDetailWidget, &TaskDetailWidget::reminderDateChanged, this, &MainWindow::handleReminderDateChange);
 
-    // 服务层信号
+    // 连接来自服务层的信号
     connect(m_todoService, &TodoService::listsChanged, this, &MainWindow::refreshListView);
     connect(m_todoService, &TodoService::tasksChanged, this, &MainWindow::refreshTaskView);
+
+
+
+
 }
 
 void MainWindow::onDetailCloseRequested() {
@@ -193,10 +194,16 @@ void MainWindow::onAddNewTodo() {
 
 
 void MainWindow::displayTasksForList(const QUuid& listId) {
+    // 【优化】在进行大量更新前，禁用控件的自动重绘，这是性能提升的关键！
+    m_taskItemsWidget->setUpdatesEnabled(false);
+
     m_taskItemsWidget->clear();
 
     auto* currentList = m_todoService->findListById(listId);
-    if (!currentList) return;
+    if (!currentList) {
+        m_taskItemsWidget->setUpdatesEnabled(true); // 【优化】别忘了在函数退出前恢复重绘
+        return;
+    }
 
     // 1. 分割任务
     QList<TodoItem> activeTasks;
@@ -222,27 +229,22 @@ void MainWindow::displayTasksForList(const QUuid& listId) {
 
     // 3. 如果有已完成的任务，则添加分组头和任务项
     if (!completedTasks.isEmpty()) {
-        // 3a. 按完成时间降序排序
         std::sort(completedTasks.begin(), completedTasks.end(), [](const TodoItem& a, const TodoItem& b){
             return a.completionDate() > b.completionDate();
         });
 
-        // 3b. 添加分组头
         QListWidgetItem* headerItem = new QListWidgetItem(m_taskItemsWidget);
         CompletedHeaderWidget* headerWidget = new CompletedHeaderWidget(completedTasks.count(), m_isCompletedSectionExpanded, this);
         headerItem->setSizeHint(headerWidget->sizeHint());
-        // 设置一个特殊的标志，让我们知道这是一个不可选中的分组头
         headerItem->setFlags(headerItem->flags() & ~Qt::ItemIsSelectable);
         m_taskItemsWidget->addItem(headerItem);
         m_taskItemsWidget->setItemWidget(headerItem, headerWidget);
 
         connect(headerWidget, &CompletedHeaderWidget::toggleExpansion, this, [this, listId](){
             m_isCompletedSectionExpanded = !m_isCompletedSectionExpanded;
-            // 重新渲染当前列表
             displayTasksForList(listId);
         });
 
-        // 3c. 如果是展开状态，则添加已完成的任务
         if (m_isCompletedSectionExpanded) {
             for (const auto& task : completedTasks) {
                 TodoListItemWidget *itemWidget = new TodoListItemWidget(task, this);
@@ -255,6 +257,9 @@ void MainWindow::displayTasksForList(const QUuid& listId) {
             }
         }
     }
+
+    // 【优化】在所有项都添加完毕后，重新启用控件更新，并强制进行一次刷新
+    m_taskItemsWidget->setUpdatesEnabled(true);
 }
 
 void MainWindow::handleTaskDelete(const QUuid& taskId) {
@@ -468,16 +473,19 @@ void MainWindow::refreshTaskView(const QUuid& listId) {
     }
 
     // 1. 获取刷新前，详情页正在显示的任务ID
-    QUuid lastDetailTaskId = m_taskDetailWidget->getCurrentTaskId();
+    QUuid detailTaskId = m_taskDetailWidget->getCurrentTaskId();
 
     // 2. 正常重绘任务列表
     displayTasksForList(listId);
 
-    // 3. 检查之前显示详情的任务是否还存在
-    if (!lastDetailTaskId.isNull()) {
-        // 如果服务中找不到这个任务了（说明它被删了）
-        if (m_todoService->findTodoById(listId, lastDetailTaskId) == nullptr) {
-            // 就隐藏详情页
+    // 3. 检查详情页是否需要同步刷新
+    if (!detailTaskId.isNull()) {
+        // 从服务层获取该任务的最新数据
+        if (auto* freshTask = m_todoService->findTodoById(listId, detailTaskId)) {
+            // 如果任务仍然存在，用最新数据强制刷新详情页
+            m_taskDetailWidget->displayTask(*freshTask);
+        } else {
+            // 如果任务已经被删除，隐藏详情页
             m_rightSideSplitter->setSizes({1, 0});
         }
     }
@@ -515,10 +523,17 @@ void MainWindow::handleDueDateChange(const QUuid& taskId, const QDateTime& dueDa
         TodoItem updatedTask = *task;
         updatedTask.setDueDate(dueDate);
         m_todoService->updateTodoInList(listId, updatedTask);
+    }
+}
 
-        // --- 【重要】强制刷新 TaskDetailWidget 的显示 ---
-        if (m_taskDetailWidget->getCurrentTaskId() == taskId) {
-            m_taskDetailWidget->displayTask(updatedTask);
-        }
+
+void MainWindow::handleReminderDateChange(const QUuid& taskId, const QDateTime& reminderDate) {
+    QUuid listId = getCurrentListId();
+    if (auto* task = m_todoService->findTodoById(listId, taskId)) {
+        TodoItem updatedTask = *task;
+        updatedTask.setReminderDate(reminderDate);
+
+        // 调用通用的更新服务
+        m_todoService->updateTodoInList(listId, updatedTask);
     }
 }

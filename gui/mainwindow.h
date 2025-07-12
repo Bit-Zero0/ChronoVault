@@ -59,8 +59,13 @@ private slots:
     void handleTaskTitleChange(const QUuid& taskId, const QString& newTitle);
     void handleListNameChange(const QUuid& listId, const QString& newName);
 
+    void handleReminderDateChange(const QUuid& taskId, const QDateTime& reminderDate);
+
+
 
     void handleDueDateChange(const QUuid& taskId, const QDateTime& dueDate);
+
+
 
 private:
     // -- 私有辅助函数 --

@@ -1,4 +1,4 @@
-﻿#include "services/TodoService.h"
+#include "services/TodoService.h"
 #include <QStandardPaths>
 #include <QDir>
 #include <QFile>
@@ -31,7 +31,7 @@ TodoService::TodoService(QObject *parent) : QObject(parent) {
 
     m_reminderTimer = new QTimer(this);
     connect(m_reminderTimer, &QTimer::timeout, this, &TodoService::checkReminders);
-    m_reminderTimer->start(100);
+    m_reminderTimer->start(1000);
 }
 
 TodoService::~TodoService() {
@@ -207,28 +207,20 @@ bool TodoService::promoteSubTaskToTodo(const QUuid& listId, const QUuid& todoId,
     return false;
 }
 
-//void TodoService::saveData() const {
-//    QJsonArray listsArray;
-//    for (const auto& list : m_lists) {
-//        listsArray.append(list.toJson());
-//    }
-//    QJsonDocument doc(listsArray);
-//    QFile file(m_savePath);
-//    if (!file.open(QIODevice::WriteOnly)) {
-//        qWarning("Couldn't open save file.");
-//        return;
-//    }
-//    file.write(doc.toJson());
-//    file.close();
-//}
-
 void TodoService::saveData() const {
-    // 【核心修改】同样使用Lambda表达式
-    QtConcurrent::run([this, lists = this->m_lists] {
-        this->saveDataInBackground(lists);
-    });
+    QJsonArray listsArray;
+    for (const auto& list : m_lists) {
+        listsArray.append(list.toJson());
+    }
+    QJsonDocument doc(listsArray);
+    QFile file(m_savePath);
+    if (!file.open(QIODevice::WriteOnly)) {
+        qWarning("Couldn't open save file.");
+        return;
+    }
+    file.write(doc.toJson());
+    file.close();
 }
-
 
 void TodoService::loadData() {
     QFile file(m_savePath);
@@ -261,130 +253,29 @@ void TodoService::setTrayIcon(QSystemTrayIcon* trayIcon) {
     m_trayIcon = trayIcon;
 }
 
-
-
-//void TodoService::checkReminders() {
-//    // 日志1：记录定时器触发，函数开始执行的时间
-//    qDebug() << "[DEBUG:" << QTime::currentTime().toString("HH:mm:ss.zzz") << "] Timer fired. Starting checkReminders().";
-
-//    if (!m_trayIcon || !m_trayIcon->isVisible()) {
-//        qWarning() << "[DEBUG:" << QTime::currentTime().toString("HH:mm:ss.zzz") << "] Tray icon is not visible. Aborting.";
-//        return;
-//    }
-
-//    QDateTime now = QDateTime::currentDateTime();
-//    bool dataHasChanged = false;
-//    QList<TodoItem> notificationsToShow;
-
-//    // 日志2：即将开始遍历任务列表
-//    qDebug() << "[DEBUG:" << QTime::currentTime().toString("HH:mm:ss.zzz") << "] Looping through tasks...";
-
-//    for (auto& list : m_lists) {
-//        for (auto& task : list.items) {
-//            if (task.reminderDate().isValid() && task.reminderDate() <= now && !task.isCompleted()) {
-//                notificationsToShow.append(task);
-//                task.setReminderDate(QDateTime());
-//                dataHasChanged = true;
-//                // 日志3：在循环内部，发现一个到期的任务
-//                qDebug() << "[DEBUG:" << QTime::currentTime().toString("HH:mm:ss.zzz") << "] Found due task:" << task.title();
-//            }
-//        }
-//    }
-
-//    // 日志4：任务遍历结束
-//    qDebug() << "[DEBUG:" << QTime::currentTime().toString("HH:mm:ss.zzz") << "] Task loop finished.";
-
-//    if (dataHasChanged) {
-//        // 日志5：准备在后台保存数据
-//        qDebug() << "[DEBUG:" << QTime::currentTime().toString("HH:mm:ss.zzz") << "] Data changed. Dispatching background save...";
-//        QtConcurrent::run([this, lists = this->m_lists] {
-//            this->saveDataInBackground(lists);
-//        });
-//    }
-
-//    if (!notificationsToShow.isEmpty()) {
-//        // 日志6：准备显示通知
-//        qDebug() << "[DEBUG:" << QTime::currentTime().toString("HH:mm:ss.zzz") << "] Ready to show notification(s).";
-
-//        for (const auto& task : notificationsToShow) {
-//            // 【核心测试】我们不真正调用showMessage，而是用一条日志来模拟
-//            qDebug() << "----------------------------------------------------";
-//            qDebug() << "[DEBUG:" << QTime::currentTime().toString("HH:mm:ss.zzz") << "] ---> VIRTUAL NOTIFICATION for task:" << task.title();
-//            qDebug() << "----------------------------------------------------";
-
-//            /*
-//            // 真正的调用被临时注释掉了
-//            m_trayIcon->showMessage(
-//                tr(QStringLiteral("ChronoVault 任务提醒")),
-//                task.title(),
-//                QSystemTrayIcon::Information,
-//                5000
-//            );
-//            */
-//        }
-//    }
-
-//    // 日志7：函数执行完毕
-//    qDebug() << "[DEBUG:" << QTime::currentTime().toString("HH:mm:ss.zzz") << "] checkReminders() finished.";
-//}
-
-
-// 请用这个新函数完整替换旧的 checkReminders 函数
 void TodoService::checkReminders() {
+    if (!m_trayIcon) return;
+
     if (!m_trayIcon || !m_trayIcon->isVisible()) {
+        // 如果不可见，可以在日志中打印一个警告，然后直接返回
+        qWarning() << "Tray icon is not visible, skipping reminder check.";
         return;
     }
-
     QDateTime now = QDateTime::currentDateTime();
-    bool dataHasChanged = false;
-    QList<TodoItem> notificationsToShow;
 
     for (auto& list : m_lists) {
         for (auto& task : list.items) {
             if (task.reminderDate().isValid() && task.reminderDate() <= now && !task.isCompleted()) {
-                notificationsToShow.append(task);
+                qDebug() << ">>> TRIGGERING NOTIFICATION for task:" << task.title();
+                m_trayIcon->showMessage(
+                    tr(QStringLiteral("ChronoVault 任务提醒")),  // 使用tr()来正确处理中文字符串
+                    task.title(),               // task.title() 是QString，本身是Unicode，没有问题
+                    QSystemTrayIcon::Information,
+                    5000
+                    );
                 task.setReminderDate(QDateTime());
-                dataHasChanged = true;
+                saveData();
             }
         }
     }
-
-    if (dataHasChanged) {
-        // 【核心修改】使用Lambda表达式来调用后台保存
-        // [this, lists = this->m_lists] { ... }
-        // 1. [this] 捕获this指针，以便能调用成员函数 saveDataInBackground
-        // 2. [lists = this->m_lists] 创建一个m_lists的安全拷贝，供后台线程使用
-        QtConcurrent::run([this, lists = this->m_lists] {
-            this->saveDataInBackground(lists);
-        });
-    }
-
-    if (!notificationsToShow.isEmpty()) {
-        for (const auto& task : notificationsToShow) {
-            m_trayIcon->showMessage(
-                tr("ChronoVault 任务提醒"),
-                task.title(),
-                QSystemTrayIcon::Information,
-                5000
-                );
-        }
-    }
-}
-
-
-void TodoService::saveDataInBackground(const QList<TodoList> listsToSave) const {
-    qDebug() << "[BG Save] Starting to save data in background thread...";
-    QJsonArray listsArray;
-    for (const auto& list : listsToSave) {
-        listsArray.append(list.toJson());
-    }
-    QJsonDocument doc(listsArray);
-    QFile file(m_savePath);
-    if (!file.open(QIODevice::WriteOnly)) {
-        qWarning() << "[BG Save] Couldn't open save file in background thread.";
-        return;
-    }
-    file.write(doc.toJson());
-    file.close();
-    qDebug() << "[BG Save] Finished saving data in background thread.";
 }

@@ -32,7 +32,12 @@ TaskDetailWidget::TaskDetailWidget(QWidget* parent)
     connect(m_deleteButton, &QPushButton::clicked, this, &TaskDetailWidget::onDeleteButtonClicked);
     connect(m_addSubTaskLineEdit, &QLineEdit::returnPressed, this, &TaskDetailWidget::onAddSubTaskLineEditReturnPressed);
     connect(m_closeButton, &QToolButton::clicked, this, &TaskDetailWidget::closeRequested);
+
     connect(m_dueDateButton, &QPushButton::clicked, this, &TaskDetailWidget::onDueDateButtonClicked);
+    connect(m_remindButton, &QPushButton::clicked, this, &TaskDetailWidget::onRemindMeButtonClicked);
+
+
+
 }
 
 void TaskDetailWidget::setupUi() {
@@ -112,6 +117,15 @@ void TaskDetailWidget::displayTask(const TodoItem& task) {
     m_currentTask = task;
     bool oldSignalsState = signalsBlocked();
     blockSignals(true);
+
+    if (task.reminderDate().isValid()) {
+        m_remindButton->setText("提醒于 " + task.reminderDate().toString("yyyy-MM-dd HH:mm"));
+        m_remindButton->setStyleSheet("color: green;"); // 给个不同的颜色
+    } else {
+        m_remindButton->setText("提醒我");
+        m_remindButton->setStyleSheet("");
+    }
+
 
     m_titleLineEdit->setText(task.title());
     m_completedCheckBox->setChecked(task.isCompleted());
@@ -313,5 +327,40 @@ void TaskDetailWidget::onDueDateButtonClicked() {
     if (dialog.exec() == QDialog::Accepted) {
         QDateTime selectedDateTime = dateTimeEdit->dateTime();
         emit dueDateChanged(m_currentTask.id(), selectedDateTime);
+    }
+}
+
+
+void TaskDetailWidget::onRemindMeButtonClicked() {
+    QDialog dialog(this);
+    dialog.setWindowTitle("选择提醒时间");
+
+    QDateTimeEdit* dateTimeEdit = new QDateTimeEdit();
+    dateTimeEdit->setCalendarPopup(true);
+    dateTimeEdit->setDisplayFormat("yyyy-MM-dd HH:mm:ss");
+
+    // 如果当前任务已有提醒时间，则显示它
+    if (m_currentTask.reminderDate().isValid()) {
+        dateTimeEdit->setDateTime(m_currentTask.reminderDate());
+    } else {
+        // 否则，默认显示一小时后
+        dateTimeEdit->setDateTime(QDateTime::currentDateTime().addSecs(3600));
+    }
+
+    QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel | QDialogButtonBox::Reset);
+    connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    connect(buttonBox->button(QDialogButtonBox::Reset), &QPushButton::clicked, [&](){
+        emit reminderDateChanged(m_currentTask.id(), QDateTime()); // 发送空QDateTime以清除
+        dialog.accept();
+    });
+
+    QVBoxLayout* layout = new QVBoxLayout(&dialog);
+    layout->addWidget(dateTimeEdit);
+    layout->addWidget(buttonBox);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        QDateTime selectedDateTime = dateTimeEdit->dateTime();
+        emit reminderDateChanged(m_currentTask.id(), selectedDateTime);
     }
 }

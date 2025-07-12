@@ -20,6 +20,7 @@ TodoListItemWidget::TodoListItemWidget(const TodoItem &item, QWidget *parent)
 }
 
 // setupUi 是一个私有成员函数，需要在这里实现
+// 请用这个函数完整替换您文件里旧的 setupUi 函数
 void TodoListItemWidget::setupUi() {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(5, 5, 5, 5);
@@ -36,9 +37,9 @@ void TodoListItemWidget::setupUi() {
 
     m_dueDateLabel = new QLabel();
     if (m_item.dueDate().isValid()) {
-         m_dueDateLabel->setText(m_item.dueDate().toString("MM-dd hh:mm"));
+         // 我们使用 24小时制(HH) 以避免混淆
+         m_dueDateLabel->setText(m_item.dueDate().toString("MM-dd HH:mm"));
     }
-    m_dueDateLabel->setStyleSheet("color: gray;");
 
     topLayout->addWidget(m_titleStackedWidget);
     topLayout->addStretch();
@@ -61,7 +62,30 @@ void TodoListItemWidget::setupUi() {
     }
 
     m_completedCheckBox->setChecked(m_item.isCompleted());
-    setCompleted(m_item.isCompleted());
+
+
+    // --- 【全新的、统一的外观更新逻辑】 ---
+    QFont font = m_completedCheckBox->font();
+    font.setStrikeOut(false); // 默认无中划线
+
+    QDateTime now = QDateTime::currentDateTime();
+    bool isOverdue = m_item.dueDate().isValid() && m_item.dueDate() < now && !m_item.isCompleted();
+
+    if (m_item.isCompleted()) {
+        // 状态1：已完成 (灰色 + 中划线)
+        font.setStrikeOut(true);
+        m_completedCheckBox->setStyleSheet("color: gray;");
+        m_dueDateLabel->setStyleSheet("color: gray;");
+    } else if (isOverdue) {
+        // 状态2：已过期 (灰色 + 截止日期标红)
+        m_completedCheckBox->setStyleSheet("color: gray;"); // 任务标题变灰
+        m_dueDateLabel->setStyleSheet("color: red; font-weight: bold;"); // 截止日期用红色粗体突出
+    } else {
+        // 状态3：正常 (黑色)
+        m_completedCheckBox->setStyleSheet("color: black;");
+        m_dueDateLabel->setStyleSheet("color: gray;");
+    }
+    m_completedCheckBox->setFont(font);
 }
 
 void TodoListItemWidget::enterEditMode() {
@@ -101,21 +125,21 @@ TodoItem TodoListItemWidget::getTodoItem() const {
     return m_item;
 }
 
-void TodoListItemWidget::setCompleted(bool completed) {
-    QFont font = m_completedCheckBox->font();
-    font.setStrikeOut(completed); // 设置或取消删除线
-    m_completedCheckBox->setFont(font);
+//void TodoListItemWidget::setCompleted(bool completed) {
+//    QFont font = m_completedCheckBox->font();
+//    font.setStrikeOut(completed); // 设置或取消删除线
+//    m_completedCheckBox->setFont(font);
 
-    // 我们不再修改复选框本身的调色板，以避免它在某些系统样式下变得不可交互。
-    // 我们只改变它旁边次要标签的颜色。
-    QPalette pal = m_subTaskInfoLabel->palette();
-    pal.setColor(QPalette::WindowText, completed ? Qt::gray : Qt::black);
-    m_subTaskInfoLabel->setPalette(pal);
+//    // 我们不再修改复选框本身的调色板，以避免它在某些系统样式下变得不可交互。
+//    // 我们只改变它旁边次要标签的颜色。
+//    QPalette pal = m_subTaskInfoLabel->palette();
+//    pal.setColor(QPalette::WindowText, completed ? Qt::gray : Qt::black);
+//    m_subTaskInfoLabel->setPalette(pal);
 
-    // 同时，为了让标题文本也变灰，我们可以使用样式表，这比调色板更安全
-    if (completed) {
-        m_completedCheckBox->setStyleSheet("color: gray;");
-    } else {
-        m_completedCheckBox->setStyleSheet("color: black;");
-    }
-}
+//    // 同时，为了让标题文本也变灰，我们可以使用样式表，这比调色板更安全
+//    if (completed) {
+//        m_completedCheckBox->setStyleSheet("color: gray;");
+//    } else {
+//        m_completedCheckBox->setStyleSheet("color: black;");
+//    }
+//}

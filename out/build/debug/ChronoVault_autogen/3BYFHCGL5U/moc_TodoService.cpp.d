@@ -1,5 +1,6 @@
 D:/github/projects/ChronoVault/out/build/debug/ChronoVault_autogen/3BYFHCGL5U/moc_TodoService.cpp: D:/github/projects/ChronoVault/services/TodoService.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/QDateTime \
+  C:/Qt/6.2.4/mingw_64/include/QtCore/QJsonObject \
   C:/Qt/6.2.4/mingw_64/include/QtCore/QList \
   C:/Qt/6.2.4/mingw_64/include/QtCore/QObject \
   C:/Qt/6.2.4/mingw_64/include/QtCore/QString \
@@ -17,6 +18,8 @@ D:/github/projects/ChronoVault/out/build/debug/ChronoVault_autogen/3BYFHCGL5U/mo
   C:/Qt/6.2.4/mingw_64/include/QtCore/qbytearraylist.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qbytearrayview.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qcalendar.h \
+  C:/Qt/6.2.4/mingw_64/include/QtCore/qcborcommon.h \
+  C:/Qt/6.2.4/mingw_64/include/QtCore/qcborvalue.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qchar.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qcompare.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qcompilerdetection.h \
@@ -36,6 +39,8 @@ D:/github/projects/ChronoVault/out/build/debug/ChronoVault_autogen/3BYFHCGL5U/mo
   C:/Qt/6.2.4/mingw_64/include/QtCore/qiodevicebase.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qiterable.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qiterator.h \
+  C:/Qt/6.2.4/mingw_64/include/QtCore/qjsonobject.h \
+  C:/Qt/6.2.4/mingw_64/include/QtCore/qjsonvalue.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qlist.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qlocale.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qlogging.h \
@@ -52,6 +57,7 @@ D:/github/projects/ChronoVault/out/build/debug/ChronoVault_autogen/3BYFHCGL5U/mo
   C:/Qt/6.2.4/mingw_64/include/QtCore/qpair.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qprocessordetection.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qrefcount.h \
+  C:/Qt/6.2.4/mingw_64/include/QtCore/qregularexpression.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qscopedpointer.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qscopeguard.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qset.h \
@@ -74,6 +80,7 @@ D:/github/projects/ChronoVault/out/build/debug/ChronoVault_autogen/3BYFHCGL5U/mo
   C:/Qt/6.2.4/mingw_64/include/QtCore/qtextstream.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qtmetamacros.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qtypeinfo.h \
+  C:/Qt/6.2.4/mingw_64/include/QtCore/qurl.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qutf8stringview.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/quuid.h \
   C:/Qt/6.2.4/mingw_64/include/QtCore/qvariant.h \
