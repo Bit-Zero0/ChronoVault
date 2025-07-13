@@ -21,11 +21,12 @@ public:
     // 接口
     const QList<TodoList>& getAllLists() const;
 
-    bool addList(const QString& name);
-    QUuid addList(const TodoList& list); // 重载，方便未来测试
+    QUuid  addList(const QString& name);
+    QUuid addList(const TodoList& list);
     bool deleteList(const QUuid& listId);
     bool updateListName(const QUuid& listId, const QString& newName);
 
+    QUuid findOrCreateInboxList();
     bool addTodoToList(const QUuid& listId, const TodoItem& todo);
     bool deleteTodoFromList(const QUuid& listId, const QUuid& todoId);
     bool updateTodoInList(const QUuid& listId, const TodoItem& updatedTodo);

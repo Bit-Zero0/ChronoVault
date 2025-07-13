@@ -78,12 +78,15 @@ const QList<TodoList>& TodoService::getAllLists() const {
 
 // --- 以下所有修改数据的函数，都在末尾调用 saveData() ---
 
-bool TodoService::addList(const QString& name) {
-    if (name.isEmpty()) return false;
-    m_lists.append(TodoList(name));
+QUuid TodoService::addList(const QString& name) {
+    if (name.isEmpty()) {
+        return QUuid(); // 如果名称为空，返回一个无效的ID
+    }
+    TodoList newList(name);
+    m_lists.append(newList);
     emit listsChanged();
     saveData();
-    return true;
+    return newList.id; // 返回新创建列表的ID
 }
 
 QUuid TodoService::addList(const TodoList& list) {
@@ -263,111 +266,44 @@ void TodoService::setTrayIcon(QSystemTrayIcon* trayIcon) {
 
 
 
-//void TodoService::checkReminders() {
-//    // 日志1：记录定时器触发，函数开始执行的时间
-//    qDebug() << "[DEBUG:" << QTime::currentTime().toString("HH:mm:ss.zzz") << "] Timer fired. Starting checkReminders().";
-
-//    if (!m_trayIcon || !m_trayIcon->isVisible()) {
-//        qWarning() << "[DEBUG:" << QTime::currentTime().toString("HH:mm:ss.zzz") << "] Tray icon is not visible. Aborting.";
-//        return;
-//    }
-
-//    QDateTime now = QDateTime::currentDateTime();
-//    bool dataHasChanged = false;
-//    QList<TodoItem> notificationsToShow;
-
-//    // 日志2：即将开始遍历任务列表
-//    qDebug() << "[DEBUG:" << QTime::currentTime().toString("HH:mm:ss.zzz") << "] Looping through tasks...";
-
-//    for (auto& list : m_lists) {
-//        for (auto& task : list.items) {
-//            if (task.reminderDate().isValid() && task.reminderDate() <= now && !task.isCompleted()) {
-//                notificationsToShow.append(task);
-//                task.setReminderDate(QDateTime());
-//                dataHasChanged = true;
-//                // 日志3：在循环内部，发现一个到期的任务
-//                qDebug() << "[DEBUG:" << QTime::currentTime().toString("HH:mm:ss.zzz") << "] Found due task:" << task.title();
-//            }
-//        }
-//    }
-
-//    // 日志4：任务遍历结束
-//    qDebug() << "[DEBUG:" << QTime::currentTime().toString("HH:mm:ss.zzz") << "] Task loop finished.";
-
-//    if (dataHasChanged) {
-//        // 日志5：准备在后台保存数据
-//        qDebug() << "[DEBUG:" << QTime::currentTime().toString("HH:mm:ss.zzz") << "] Data changed. Dispatching background save...";
-//        QtConcurrent::run([this, lists = this->m_lists] {
-//            this->saveDataInBackground(lists);
-//        });
-//    }
-
-//    if (!notificationsToShow.isEmpty()) {
-//        // 日志6：准备显示通知
-//        qDebug() << "[DEBUG:" << QTime::currentTime().toString("HH:mm:ss.zzz") << "] Ready to show notification(s).";
-
-//        for (const auto& task : notificationsToShow) {
-//            // 【核心测试】我们不真正调用showMessage，而是用一条日志来模拟
-//            qDebug() << "----------------------------------------------------";
-//            qDebug() << "[DEBUG:" << QTime::currentTime().toString("HH:mm:ss.zzz") << "] ---> VIRTUAL NOTIFICATION for task:" << task.title();
-//            qDebug() << "----------------------------------------------------";
-
-//            /*
-//            // 真正的调用被临时注释掉了
-//            m_trayIcon->showMessage(
-//                tr(QStringLiteral("ChronoVault 任务提醒")),
-//                task.title(),
-//                QSystemTrayIcon::Information,
-//                5000
-//            );
-//            */
-//        }
-//    }
-
-//    // 日志7：函数执行完毕
-//    qDebug() << "[DEBUG:" << QTime::currentTime().toString("HH:mm:ss.zzz") << "] checkReminders() finished.";
-//}
 
 
-// 请用这个新函数完整替换旧的 checkReminders 函数
+
 void TodoService::checkReminders() {
-    if (!m_trayIcon || !m_trayIcon->isVisible()) {
-        return;
-    }
+    if (!m_trayIcon) return;
 
     QDateTime now = QDateTime::currentDateTime();
-    bool dataHasChanged = false;
-    QList<TodoItem> notificationsToShow;
+    bool dataChanged = false; // 标记是否有任务的提醒状态需要保存
 
     for (auto& list : m_lists) {
         for (auto& task : list.items) {
-            if (task.reminderDate().isValid() && task.reminderDate() <= now && !task.isCompleted()) {
-                notificationsToShow.append(task);
-                task.setReminderDate(QDateTime());
-                dataHasChanged = true;
+            // 获取任务的提醒对象
+            Reminder reminder = task.reminder();
+
+            // 检查提醒是否激活，并且时间已到
+            if (reminder.isActive() && reminder.nextReminderTime() <= now && !task.isCompleted()) {
+                qDebug() << "Todo Reminder Triggered:" << task.title();
+                m_trayIcon->showMessage(
+                    tr("ChronoVault 待办提醒"),
+                    task.title(),
+                    QSystemTrayIcon::Information,
+                    5000
+                    );
+
+                // 【核心升级】让 Reminder 对象自己计算下一次提醒时间
+                // 如果是单次提醒，此函数会自动将其设置为不再激活
+                reminder.calculateNext();
+
+                // 将更新后的 Reminder 对象设置回任务中
+                task.setReminder(reminder);
+                dataChanged = true;
             }
         }
     }
 
-    if (dataHasChanged) {
-        // 【核心修改】使用Lambda表达式来调用后台保存
-        // [this, lists = this->m_lists] { ... }
-        // 1. [this] 捕获this指针，以便能调用成员函数 saveDataInBackground
-        // 2. [lists = this->m_lists] 创建一个m_lists的安全拷贝，供后台线程使用
-        QtConcurrent::run([this, lists = this->m_lists] {
-            this->saveDataInBackground(lists);
-        });
-    }
-
-    if (!notificationsToShow.isEmpty()) {
-        for (const auto& task : notificationsToShow) {
-            m_trayIcon->showMessage(
-                tr("ChronoVault 任务提醒"),
-                task.title(),
-                QSystemTrayIcon::Information,
-                5000
-                );
-        }
+    // 如果有任何提醒状态被更新，则保存数据
+    if (dataChanged) {
+        saveData();
     }
 }
 
@@ -387,4 +323,20 @@ void TodoService::saveDataInBackground(const QList<TodoList> listsToSave) const 
     file.write(doc.toJson());
     file.close();
     qDebug() << "[BG Save] Finished saving data in background thread.";
+}
+
+
+QUuid TodoService::findOrCreateInboxList()
+{
+    const QString inboxName = tr("收件箱");
+    // 1. 尝试查找已存在的“收件箱”
+    for (const auto& list : m_lists) {
+        if (list.name == inboxName) {
+            return list.id;
+        }
+    }
+    // 2. 如果没找到，则创建一个新的
+    qDebug() << "Inbox not found. Creating a new one.";
+    TodoList inbox(inboxName);
+    return addList(inbox); // addList 内部会自动保存和发射信号
 }

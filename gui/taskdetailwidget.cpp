@@ -1,5 +1,6 @@
 #include "gui/TaskDetailWidget.h"
 #include "gui/SubTaskItemWidget.h"
+#include "gui/ReminderSettingsDialog.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QCheckBox>
@@ -118,50 +119,49 @@ void TaskDetailWidget::displayTask(const TodoItem& task) {
     bool oldSignalsState = signalsBlocked();
     blockSignals(true);
 
-    if (task.reminderDate().isValid()) {
-        m_remindButton->setText("提醒于 " + task.reminderDate().toString("yyyy-MM-dd HH:mm"));
-        m_remindButton->setStyleSheet("color: green;"); // 给个不同的颜色
+    // 使用新的 Reminder 对象来更新UI
+    Reminder currentReminder = task.reminder();
+    if (currentReminder.isActive()) {
+        m_remindButton->setText(tr("提醒于 ") + currentReminder.nextReminderTime().toString("yyyy-MM-dd HH:mm"));
+        m_remindButton->setStyleSheet("color: green;");
     } else {
-        m_remindButton->setText("提醒我");
+        m_remindButton->setText(tr("提醒我"));
         m_remindButton->setStyleSheet("");
     }
-
 
     m_titleLineEdit->setText(task.title());
     m_completedCheckBox->setChecked(task.isCompleted());
     m_notesTextEdit->setText(task.description());
+
     if (task.dueDate().isValid()) {
-        m_dueDateButton->setText("截止于 " + task.dueDate().toString("yyyy-MM-dd HH:mm")); // 显示时间
-            m_dueDateButton->setStyleSheet("color: blue;");
+        m_dueDateButton->setText(tr("截止于 ") + task.dueDate().toString("yyyy-MM-dd HH:mm"));
+        m_dueDateButton->setStyleSheet("color: blue;");
     } else {
-        m_dueDateButton->setText("添加截止日期");
+        m_dueDateButton->setText(tr("添加截止日期"));
         m_dueDateButton->setStyleSheet("");
     }
 
-    m_creationDateLabel->setText("创建于 " + task.creationDate().toString("yyyy年M月d日"));
+    m_creationDateLabel->setText(tr("创建于 ") + task.creationDate().toString("yyyy年M月d日"));
 
 
     m_subTasksListWidget->clear();
     for(const auto& subtask : task.subTasks()) {
         QListWidgetItem* item = new QListWidgetItem(m_subTasksListWidget);
         SubTaskItemWidget* widget = new SubTaskItemWidget(subtask, m_subTasksListWidget);
-
         item->setSizeHint(widget->sizeHint());
         m_subTasksListWidget->addItem(item);
         m_subTasksListWidget->setItemWidget(item, widget);
-
-        // 连接信号
         connect(widget, &SubTaskItemWidget::subTaskStateChanged, this, [this](const QUuid& subTaskId, bool isCompleted){
             emit subTaskStateChanged(m_currentTask.id(), subTaskId, isCompleted);
         });
         connect(widget, &SubTaskItemWidget::optionsMenuRequested, this, &TaskDetailWidget::showSubTaskMenu);
-        // 【新增连接】处理来自步骤项的更新请求
         connect(widget, &SubTaskItemWidget::subTaskUpdated, this, &TaskDetailWidget::handleSubTaskDataUpdate);
     }
 
     blockSignals(oldSignalsState);
     updateSubTasksListHeight();
 }
+
 
 void TaskDetailWidget::handleSubTaskDataUpdate(const SubTask& updatedSubTask) {
     // 直接将更新请求向上传递给 MainWindow
@@ -332,35 +332,17 @@ void TaskDetailWidget::onDueDateButtonClicked() {
 
 
 void TaskDetailWidget::onRemindMeButtonClicked() {
-    QDialog dialog(this);
-    dialog.setWindowTitle("选择提醒时间");
+    // 这个槽函数现在是为 TodoItem 设置提醒，所以我们不再使用 Anniversary 的对话框
+    // 而是直接使用我们为 Reminder 设计的对话框
 
-    QDateTimeEdit* dateTimeEdit = new QDateTimeEdit();
-    dateTimeEdit->setCalendarPopup(true);
-    dateTimeEdit->setDisplayFormat("yyyy-MM-dd HH:mm:ss");
-
-    // 如果当前任务已有提醒时间，则显示它
-    if (m_currentTask.reminderDate().isValid()) {
-        dateTimeEdit->setDateTime(m_currentTask.reminderDate());
-    } else {
-        // 否则，默认显示一小时后
-        dateTimeEdit->setDateTime(QDateTime::currentDateTime().addSecs(3600));
-    }
-
-    QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel | QDialogButtonBox::Reset);
-    connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
-    connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-    connect(buttonBox->button(QDialogButtonBox::Reset), &QPushButton::clicked, [&](){
-        emit reminderDateChanged(m_currentTask.id(), QDateTime()); // 发送空QDateTime以清除
-        dialog.accept();
-    });
-
-    QVBoxLayout* layout = new QVBoxLayout(&dialog);
-    layout->addWidget(dateTimeEdit);
-    layout->addWidget(buttonBox);
+    ReminderSettingsDialog dialog(m_currentTask.reminder(), this);
 
     if (dialog.exec() == QDialog::Accepted) {
-        QDateTime selectedDateTime = dateTimeEdit->dateTime();
-        emit reminderDateChanged(m_currentTask.id(), selectedDateTime);
+        // 【注意】这里不再直接修改 m_currentTask
+        // 而是发射一个信号，让 MainWindow->TodoService 去处理
+        // 这是为了保持数据流的单向性
+        // 不过为了简化，我们先直接修改，后续再优化
+        m_currentTask.setReminder(dialog.getReminder());
+        emit taskUpdated(m_currentTask); // 发射信号通知 MainWindow 更新
     }
 }

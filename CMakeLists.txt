@@ -25,6 +25,8 @@ set(PROJECT_SOURCES
     # Services
     services/TodoService.h
     services/TodoService.cpp
+    services/AnniversaryService.h
+    services/AnniversaryService.cpp
     # GUI
     gui/MainWindow.h
     gui/MainWindow.cpp
@@ -51,6 +53,15 @@ qt_add_executable(ChronoVault
     MANUAL_FINALIZATION
     ${PROJECT_SOURCES}
     ${PROJECT_RESOURCES}
+    gui/AnniversaryItemWidget.h gui/AnniversaryItemWidget.cpp
+    gui/AddAnniversaryDialog.h gui/AddAnniversaryDialog.cpp
+    core/Reminder.h
+    gui/TodoListSelectionDialog.h gui/TodoListSelectionDialog.cpp
+    gui/ReminderSettingsDialog.h gui/ReminderSettingsDialog.cpp
+    core/Reminder.cpp
+    core/Moment.h core/Moment.cpp
+    gui/AddMomentDialog.h gui/AddMomentDialog.cpp
+    gui/AnniversaryDetailView.h gui/AnniversaryDetailView.cpp
 )
 
 # 添加头文件搜索路径

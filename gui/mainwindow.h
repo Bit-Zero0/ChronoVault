@@ -1,9 +1,14 @@
 #pragma once
 #include <QMainWindow>
 #include "core/TodoItem.h"
+#include "services/AnniversaryService.h"
 
 class TodoService;
 class TaskDetailWidget;
+class AnniversaryItemWidget;
+class AddAnniversaryDialog;
+class ReminderSettingsDialog;
+class AnniversaryDetailView;
 
 QT_BEGIN_NAMESPACE
 class QListWidget;
@@ -13,6 +18,9 @@ class QLineEdit;
 class QLabel;
 class QToolButton;
 class QMenu;
+class QHBoxLayout;
+class QStackedWidget;
+class QButtonGroup;
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow {
@@ -32,6 +40,8 @@ private slots:
     void showTaskContextMenu(const QPoint& pos);
     void handleTaskDoubleClick(QListWidgetItem* item);
     void onDetailCloseRequested();
+
+    void onModuleChanged(int id);
 
     // --- 【重要】添加缺失的槽函数声明 ---
     void onRenameList();
@@ -59,13 +69,27 @@ private slots:
     void handleTaskTitleChange(const QUuid& taskId, const QString& newTitle);
     void handleListNameChange(const QUuid& listId, const QString& newName);
 
-    void handleReminderDateChange(const QUuid& taskId, const QDateTime& reminderDate);
+    //void handleReminderDateChange(const QUuid& taskId, const QDateTime& reminderDate);
 
 
 
     void handleDueDateChange(const QUuid& taskId, const QDateTime& dueDate);
 
+    void refreshAnniversaryView();
+    void onAddNewAnniversary();
+    void onAnniversaryItemDeleted(const QUuid& id);
 
+    void onAddToTodoRequested(const QUuid& id);
+
+    void onAnniversaryCategoryChanged();
+    void showAnniversaryCategoryContextMenu(const QPoint& pos);
+    void onDeleteAnniversaryCategory();
+    void onAddNewAnniversaryCategory();
+    void onRenameAnniversaryCategory();
+    void onAddMomentRequested(const QUuid& anniversaryId);
+
+    void onAnniversaryItemClicked(QListWidgetItem* item);
+    void onBackFromAnniversaryDetail();
 
 private:
     // -- 私有辅助函数 --
@@ -75,28 +99,57 @@ private:
     TodoItem* findTodoItemFromWidget(QWidget* widget) const;
     QUuid getCurrentListId() const;
 
+    void refreshAnniversaryCategories();
+
     // -- 数据服务 --
     TodoService* m_todoService;
+    AnniversaryService* m_anniversaryService;
+
+    QSplitter* m_taskViewSplitter;
+
 
     // -- UI 控件 --
     // 根布局
     QSplitter* m_rootSplitter;
 
-    // 左侧面板 (列表选择区)
-    QWidget* m_listPanel;
+    // 左侧面板 (包含切换器和内容区)
+    QWidget* m_leftPanel;
+    QHBoxLayout* m_moduleSwitcherLayout; // 模块切换器布局
+    QButtonGroup* m_moduleButtonGroup;   // 按钮组，用于管理切换
+    QStackedWidget* m_leftContentStack;  // 左侧内容区 (待办列表/纪念日分类)
+    QToolButton* m_settingsButton;       // 左下角设置按钮
+
+    // 左侧 -> 待办模块
+    QWidget* m_todoListPanel;            // 包含待办列表和新建按钮的面板
     QListWidget* m_listSelectionWidget;
     QToolButton* m_addNewListButton;
 
-    // 右侧布局 (由另一个分割器管理)
-    QSplitter* m_rightSideSplitter;
+    // 左侧 -> 纪念日模块 (占位)
+    QWidget* m_anniversaryPanel;         // 纪念日模块的面板
+    QListWidget* m_anniversaryCategoryWidget; // 用于显示纪念日分类
 
-    // 右侧 -> 左边 (任务列表区)
+    // 右侧布局 (与之前相同)
+    QSplitter* m_rightSideSplitter;
     QWidget* m_taskPanel;
     QLabel* m_currentListTitleLabel;
     QListWidget* m_taskItemsWidget;
     QLineEdit* m_addTodoLineEdit;
     bool m_isCompletedSectionExpanded;
-
-    // 右侧 -> 右边 (任务详情区)
     TaskDetailWidget* m_taskDetailWidget;
+
+    QStackedWidget* m_rightContentStack; // 【新增】用于管理右侧内容区
+
+    // -- 纪念日模块的右侧UI --
+    QWidget* m_anniversaryRightPanel;
+    QListWidget* m_anniversaryItemsWidget;
+    QToolButton* m_addAnniversaryButton;
+    QToolButton* m_addAnniversaryCategoryButton;
+
+
+    QStackedWidget* m_anniversaryContentStack; // 【新增】管理纪念日模块的右侧视图
+    QWidget* m_anniversaryOverviewPanel;      // 【新增】概览页
+    AnniversaryDetailView* m_anniversaryDetailView;
+
+
+
 };

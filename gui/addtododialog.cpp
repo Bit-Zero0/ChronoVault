@@ -46,5 +46,12 @@ TodoItem AddTodoDialog::getNewTodoItemData() const {
     QString description = m_descriptionTextEdit->toPlainText();
     QDateTime dueDate = m_dueDateEdit->dateTime();
 
-    return TodoItem(title, description, dueDate);
+    // 1. 【修正】使用我们新的、唯一的构造函数，只传入标题来创建对象
+    TodoItem task(title);
+
+    // 2. 【修正】使用 setter 函数来设置其他属性
+    task.setDescription(description);
+    task.setDueDate(dueDate);
+
+    return task;
 }
