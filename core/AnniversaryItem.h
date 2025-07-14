@@ -56,6 +56,7 @@ public:
     void setAddedToTodo(bool added) { m_isAddedToTodo = added; }
 
     const QList<Moment>& moments() const { return m_moments; }
+    QList<Moment>& moments() { return m_moments; }           // 用于修改访问
     void addMoment(const Moment& moment) { m_moments.append(moment); }
     // --- -------------------------------------------- ---
 

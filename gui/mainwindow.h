@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QMainWindow>
-
+#include "core/Moment.h"
 // Forward declarations
 class TodoService;
 class AnniversaryService;
@@ -20,6 +20,7 @@ class QUuid;
 class QDateTime;
 class TodoItem;
 class SubTask;
+class Reminder;
 
 class MainWindow : public QMainWindow
 {
@@ -74,6 +75,9 @@ private slots:
     void onAnniversaryItemDeleted(const QUuid& id);
     void onAddToTodoRequested(const QUuid& id);
     void onAddMomentRequested(const QUuid& anniversaryId);
+    void handleReminderChange(const QUuid& taskId, const Reminder& reminder);
+    void onAnniversaryMomentUpdated(const QUuid& anniversaryId, const Moment& moment);
+
 
 private:
     void setupUi();

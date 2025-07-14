@@ -1,4 +1,5 @@
 #include "gui/AnniversaryDetailWidget.h"
+#include "gui/MomentDetailDialog.h"
 #include "gui/MomentWidget.h"
 #include <QVBoxLayout>
 #include <QLabel>
@@ -81,9 +82,11 @@ void AnniversaryDetailView::displayAnniversary(const AnniversaryItem& item)
 
 void AnniversaryDetailView::onMomentCardClicked(const Moment& moment)
 {
-    // 这是我们的第二步，现在只打印一条日志来验证点击功能是否正常
-    qDebug() << "Moment card clicked! Text:" << moment.text();
-    QMessageBox::information(this, tr("瞬间详情"), tr("时间：%1\n内容：%2")
-                             .arg(moment.timestamp().toString("yyyy-MM-dd HH:mm"))
-                                                           .arg(moment.text()));
+    // 【核心修正】创建对话框时，传入当前纪念日的ID
+    MomentDetailDialog dialog(moment, m_currentItem.id(), this);
+
+    // 连接对话框的 momentUpdated 信号到详情页自身的 momentUpdated 信号
+    connect(&dialog, &MomentDetailDialog::momentUpdated, this, &AnniversaryDetailView::momentUpdated);
+
+    dialog.exec();
 }

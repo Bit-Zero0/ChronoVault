@@ -1,5 +1,6 @@
 #include "gui/AnniversaryDetailView.h"
 #include "gui/MomentCardWidget.h"
+#include "gui/MomentDetailDialog.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -10,7 +11,7 @@
 #include <QMessageBox>
 #include <QEvent>
 #include <QScrollBar>
-
+#include <QTextBrowser>
 
 AnniversaryDetailView::AnniversaryDetailView(QWidget* parent) : QWidget(parent)
 {
@@ -147,19 +148,20 @@ QString AnniversaryDetailView::formatRemainingTime(qint64 totalSeconds) const {
     return result;
 }
 
-void AnniversaryDetailView::onMomentCardClicked(const Moment& moment)
-{
-    // 这是我们计划中的临时方案，用于验证点击功能。
-    // 它会弹出一个简单的信息框来显示“瞬间”的详情。
-    // 在下一步中，我们会将它替换为您草图中设计的、更精美的“卡片浮窗”。
-    QMessageBox::information(this,
-                             tr("瞬间详情"),
-                             tr("记录时间：%1\n\n内容：\n%2")
-                                 .arg(moment.timestamp().toString("yyyy-MM-dd HH:mm:ss"))
-                                 .arg(moment.text())
-                             );
-}
+//void AnniversaryDetailView::onMomentCardClicked(const Moment& moment)
+//{
+//    // 【修改】创建对话框时，传入当前纪念日的ID
+//    MomentDetailDialog dialog(moment, m_currentItem.id(), this);
 
+//    // 【新增】连接对话框的 momentUpdated 信号到服务层
+//    // 我们使用 lambda 表达式来简化这个连接
+//    connect(&dialog, &MomentDetailDialog::momentUpdated, this, [this](const Moment& updatedMoment){
+//        // 命令服务层去更新这个 Moment
+//        m_anniversaryService->updateMoment(m_currentItem.id(), updatedMoment);
+//    });
+
+//    dialog.exec();
+//}
 
 bool AnniversaryDetailView::eventFilter(QObject *watched, QEvent *event)
 {
@@ -189,3 +191,26 @@ void AnniversaryDetailView::autoScrollMoments()
     }
     scrollBar->setValue(nextValue);
 }
+
+void AnniversaryDetailView::onMomentCardClicked(const Moment& moment)
+{
+    MomentDetailDialog dialog(moment, m_currentItem.id(), this);
+
+    // 【核心修正】使用一个直接的、类型安全的信号-信号连接
+    // 将 dialog 发出的 momentUpdated 信号，直接转发给 AnniversaryDetailView 自己发出的同名信号
+    connect(&dialog, &MomentDetailDialog::momentUpdated,
+            this, &AnniversaryDetailView::momentUpdated);
+
+    dialog.exec();
+}
+
+//void MomentDetailDialog::performAutoSave()
+//{
+//    // 1. 更新 Moment 对象的内容
+//    m_currentMoment.setText(m_textBrowser->toMarkdown());
+
+//    // 2. 【核心修正】发射信号时，同时传递 anniversaryId 和 moment 对象
+//    emit momentUpdated(m_anniversaryId, m_currentMoment);
+
+//    qDebug() << "Auto-saved moment:" << m_currentMoment.id();
+//}

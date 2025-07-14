@@ -313,3 +313,17 @@ void AnniversaryService::saveDataInBackground(const QList<AnniversaryItem> lists
     }
 }
 
+void AnniversaryService::updateMoment(const QUuid& anniversaryId, const Moment& updatedMoment)
+{
+    if (auto* item = findItemById(anniversaryId)) {
+        // 遍历找到对应的 moment 并替换它
+        for (auto& moment : item->moments()) {
+            if (moment.id() == updatedMoment.id()) {
+                moment = updatedMoment;
+                emit itemsChanged(); // 发射信号，让UI知道数据变了
+                saveData();
+                return;
+            }
+        }
+    }
+}

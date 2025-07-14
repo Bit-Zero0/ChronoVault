@@ -63,6 +63,9 @@ qt_add_executable(ChronoVault
     gui/AddMomentDialog.h gui/AddMomentDialog.cpp
     gui/AnniversaryDetailView.h gui/AnniversaryDetailView.cpp
     gui/MomentCardWidget.h gui/MomentCardWidget.cpp
+    gui/MomentDetailDialog.h gui/MomentDetailDialog.cpp
+    gui/ImageViewerDialog.h gui/ImageViewerDialog.cpp
+    gui/ClickableLabel.h gui/ClickableLabel.cpp
 
 )
 

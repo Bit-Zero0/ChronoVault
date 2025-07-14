@@ -22,6 +22,7 @@ public:
 
 signals:
     void backRequested();
+    void momentUpdated(const QUuid& anniversaryId, const Moment& updatedMoment);
 
 protected:
     // 重写事件过滤器，用于监听鼠标进入/离开滚动区域
@@ -35,6 +36,7 @@ private slots:
 private:
     void setupUi();
     QString formatRemainingTime(qint64 seconds) const;
+    void performAutoSave();
 
     AnniversaryItem m_currentItem;
     QTimer* m_countdownTimer;

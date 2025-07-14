@@ -2,7 +2,8 @@
 #include <QWidget>
 #include <QListWidgetItem>
 #include "core/TodoItem.h"
-#include "gui/SubTaskItemWidget.h"
+#include "core/TodoItem.h" // 确保包含的是最新的TodoItem
+#include "core/Reminder.h" // 确保包含Reminder
 
 // 前向声明
 QT_BEGIN_NAMESPACE
@@ -44,6 +45,7 @@ signals:
     void dueDateChanged(const QUuid& taskId, const QDateTime& dueDate);
 
     void reminderDateChanged(const QUuid& taskId, const QDateTime& reminderDate);
+    void reminderChanged(const QUuid& taskId, const Reminder& reminder);
 
 private slots:
     void onTitleEditingFinished();

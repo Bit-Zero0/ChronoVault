@@ -6,12 +6,17 @@
 #include <QUuid>
 #include <QStringList>
 #include <QJsonArray>
+#include <QMetaType>
 
 class Moment {
 public:
     // 构造函数
     Moment();
     explicit Moment(const QString& text);
+    Moment(const Moment& other) = default;
+    Moment& operator=(const Moment& other) = default;
+    Moment(Moment&& other) noexcept = default;
+    Moment& operator=(Moment&& other) noexcept = default;
 
     // Getters & Setters
     QUuid id() const;
@@ -32,3 +37,5 @@ private:
     QString m_text;             // 文字描述 (未来支持Markdown)
     QStringList m_imagePaths;   // 存储关联的图片本地路径
 };
+
+Q_DECLARE_METATYPE(Moment)
