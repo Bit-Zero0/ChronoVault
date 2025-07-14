@@ -141,26 +141,30 @@ void AnniversaryService::loadData() {
 
     QByteArray data = file.readAll();
     QJsonDocument doc = QJsonDocument::fromJson(data);
-    if (!doc.isObject()) return; // 现在根节点是一个对象
+    if (!doc.isObject()) return;
 
     QJsonObject rootObj = doc.object();
     m_items.clear();
     m_categories.clear();
 
-    // 加载分类
     if (rootObj.contains("categories") && rootObj["categories"].isArray()) {
         QJsonArray array = rootObj["categories"].toArray();
-        for (const QJsonValue& value : array) {
-            m_categories.append(value.toString());
-        }
+        for (const QJsonValue& value : array) { m_categories.append(value.toString()); }
     }
-    // 加载项目
+
     if (rootObj.contains("items") && rootObj["items"].isArray()) {
         QJsonArray array = rootObj["items"].toArray();
         for (const QJsonValue& value : array) {
             m_items.append(AnniversaryItem::fromJson(value.toObject()));
         }
     }
+
+    // 【诊断日志 1】检查加载到服务层后，第一个项目有多少个“瞬间”
+    if (!m_items.isEmpty()) {
+        qDebug() << "[DIAGNOSTIC 1] In AnniversaryService::loadData, first item has"
+                 << m_items.first().moments().count() << "moments.";
+    }
+
     emit itemsChanged();
 }
 

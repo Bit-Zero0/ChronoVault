@@ -37,9 +37,9 @@ void TodoListItemWidget::setupUi() {
 
     m_dueDateLabel = new QLabel();
     if (m_item.dueDate().isValid()) {
-         // 我们使用 24小时制(HH) 以避免混淆
-         m_dueDateLabel->setText(m_item.dueDate().toString("MM-dd HH:mm"));
+        m_dueDateLabel->setText(m_item.dueDate().toString("MM-dd HH:mm"));
     }
+    m_dueDateLabel->setStyleSheet("color: gray;");
 
     topLayout->addWidget(m_titleStackedWidget);
     topLayout->addStretch();

@@ -235,26 +235,34 @@ void TodoService::saveData() const {
 
 void TodoService::loadData() {
     QFile file(m_savePath);
-    if (!file.exists() || !file.open(QIODevice::ReadOnly)) {
-        qWarning("Couldn't open save file, or it doesn't exist. Loading initial data.");
-        loadInitialData();
+
+    // 【核心修正】如果文件不存在，我们只打印一条信息，然后直接返回，不再加载初始数据
+    if (!file.exists()) {
+        qWarning("Todo data file not found. Starting with an empty list.");
         return;
     }
+
+    if (!file.open(QIODevice::ReadOnly)) {
+        qWarning() << "Couldn't open Todo save file:" << m_savePath;
+        return;
+    }
+
     QByteArray data = file.readAll();
     file.close();
+
     if (data.isEmpty()) {
-        qWarning("Save file is empty. Loading initial data.");
-        loadInitialData();
+        qWarning("Todo data file is empty. Starting with an empty list.");
         return;
     }
+
     QJsonDocument doc = QJsonDocument::fromJson(data);
     if (!doc.isArray()) {
-        qWarning("Save file is not a valid JSON array. Loading initial data.");
-        loadInitialData();
+        qWarning("Todo data file is not a valid JSON array. Starting with an empty list.");
         return;
     }
-    QJsonArray listsArray = doc.array();
+
     m_lists.clear();
+    QJsonArray listsArray = doc.array();
     for (const auto& value : listsArray) {
         m_lists.append(TodoList::fromJson(value.toObject()));
     }

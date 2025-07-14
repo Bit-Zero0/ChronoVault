@@ -66,7 +66,7 @@ public:
     // --- 数据持久化函数 (为未来做准备) ---
     QJsonObject toJson() const {
         QJsonObject json;
-        json["id"] = m_id.toString(QUuid::WithoutBraces); // 写入ID
+        json["id"] = m_id.toString(QUuid::WithoutBraces);
         json["title"] = m_title;
         json["category"] = m_category;
         json["eventType"] = static_cast<int>(m_eventType);
@@ -76,20 +76,18 @@ public:
         json["reminderDateTime"] = m_reminderDateTime.toString(Qt::ISODate);
         json["isAddedToTodo"] = m_isAddedToTodo;
 
+        // 【新增】将 moments 列表序列化为一个JSON数组
         QJsonArray momentsArray;
         for (const auto& moment : m_moments) {
             momentsArray.append(moment.toJson());
         }
         json["moments"] = momentsArray;
-
         return json;
     }
 
     static AnniversaryItem fromJson(const QJsonObject& json) {
         AnniversaryItem item;
-        // 使用 .value("key", defaultValue) 的形式，即使key不存在也不会出错
         item.m_id = QUuid(json.value("id").toString());
-        // 如果加载时ID为空，说明是旧数据或已损坏，为其生成一个新ID
         if (item.m_id.isNull()) {
             item.m_id = QUuid::createUuid();
         }
@@ -102,9 +100,11 @@ public:
         item.m_reminderDateTime = QDateTime::fromString(json.value("reminderDateTime").toString(), Qt::ISODate);
         item.m_isAddedToTodo = json.value("isAddedToTodo").toBool();
 
+        // 【新增的逻辑】
         if (json.contains("moments") && json["moments"].isArray()) {
             QJsonArray momentsArray = json["moments"].toArray();
             for (const auto& momentValue : momentsArray) {
+                // 将数组中的每一个JSON对象都转换回 Moment 对象，并添加到列表中
                 item.m_moments.append(Moment::fromJson(momentValue.toObject()));
             }
         }

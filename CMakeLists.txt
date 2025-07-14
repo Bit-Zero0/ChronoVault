@@ -20,7 +20,7 @@ set(PROJECT_SOURCES
     core/TodoItem.cpp
     core/TodoList.h
     core/TodoList.cpp
-    core/Anniversary.h
+    core/AnniversaryItem.h
     core/SharedFile.h
     # Services
     services/TodoService.h
@@ -62,6 +62,8 @@ qt_add_executable(ChronoVault
     core/Moment.h core/Moment.cpp
     gui/AddMomentDialog.h gui/AddMomentDialog.cpp
     gui/AnniversaryDetailView.h gui/AnniversaryDetailView.cpp
+    gui/MomentCardWidget.h gui/MomentCardWidget.cpp
+
 )
 
 # 添加头文件搜索路径
