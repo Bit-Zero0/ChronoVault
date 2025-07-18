@@ -72,48 +72,65 @@ void AnniversaryDetailView::setupUi() {
     mainLayout->addWidget(m_momentsScrollArea);
 }
 
+// gui/AnniversaryDetailView.cpp
+
 void AnniversaryDetailView::displayAnniversary(const AnniversaryItem& item)
 {
     qDebug() << "[DIAGNOSTIC 3] In AnniversaryDetailView::displayAnniversary, received item has"
              << item.moments().count() << "moments.";
 
-    m_currentItem = item;
-    m_titleLabel->setText(m_currentItem.title());
-    updateCountdown();
+    // --- 【重要修正】智能刷新逻辑 ---
+    // 检查传入的 item 是否是第一次加载 (m_currentItem 无效) 或 是一个全新的 item
+    if (m_currentItem.id() != item.id()) {
+        // 如果是全新的 item，执行完整的重建流程
+        m_currentItem = item;
+        m_titleLabel->setText(m_currentItem.title());
 
-    bool isFutureCountdown = (m_currentItem.eventType() == AnniversaryEventType::Countdown && m_currentItem.targetDateTime() > QDateTime::currentDateTime());
-    if (isFutureCountdown) {
-        if (!m_countdownTimer->isActive()) {
-            m_countdownTimer->start(1000);
+        // 清空旧的Moments
+        QLayoutItem* child;
+        while ((child = m_momentsLayout->takeAt(0)) != nullptr) {
+            if (child->widget()) {
+                delete child->widget();
+            }
+            delete child;
         }
+
+        // 添加新的Moments卡片
+        for (const Moment& moment : item.moments()) {
+            MomentCardWidget* card = new MomentCardWidget(moment, this);
+            connect(card, &MomentCardWidget::clicked, this, &AnniversaryDetailView::onMomentCardClicked);
+            m_momentsLayout->addWidget(card);
+        }
+        m_momentsLayout->addStretch();
+
     } else {
-        m_countdownTimer->stop();
-    }
+        // 如果只是更新当前的 item，执行“就地更新”
+        m_currentItem = item; // 先更新内部数据
 
-    // 清空旧的Moments
-    QLayoutItem* child;
-    while ((child = m_momentsLayout->takeAt(0)) != nullptr) {
-        if (child->widget()) {
-            delete child->widget();
+        // 遍历布局中现有的卡片
+        for (int i = 0; i < m_momentsLayout->count(); ++i) {
+            QLayoutItem* layoutItem = m_momentsLayout->itemAt(i);
+            if (auto* card = qobject_cast<MomentCardWidget*>(layoutItem->widget())) {
+                // 找到每个卡片对应的新数据并更新它
+                for (const Moment& newMomentData : m_currentItem.moments()) {
+                    if (card->moment().id() == newMomentData.id()) {
+                        card->updateData(newMomentData);
+                        break; // 找到后就跳出内层循环
+                    }
+                }
+            }
         }
-        delete child;
     }
 
-    // 添加新的Moments卡片
-    for (const Moment& moment : item.moments()) {
-        MomentCardWidget* card = new MomentCardWidget(moment, this);
-        connect(card, &MomentCardWidget::clicked, this, &AnniversaryDetailView::onMomentCardClicked);
-        m_momentsLayout->addWidget(card);
-    }
-    m_momentsLayout->addStretch();
-
-    // 【新增】启动或停止时光图的自动滚动
-    if(m_momentsLayout->count() > 3) { // 只有卡片多的时候才滚动
-        m_autoScrollTimer->start(30); // 数字越小滚动越快
+    // --- 倒计时和滚动条的逻辑保持不变 ---
+    updateCountdown();
+    if(m_momentsLayout->count() > 3) {
+        m_autoScrollTimer->start(30);
     } else {
         m_autoScrollTimer->stop();
     }
 }
+
 
 void AnniversaryDetailView::updateCountdown() {
     QDateTime target = m_currentItem.targetDateTime();
