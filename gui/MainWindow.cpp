@@ -188,8 +188,8 @@ void MainWindow::setupConnections() {
     connect(m_addAnniversaryButton, &QToolButton::clicked, this, &MainWindow::onAddNewAnniversary);
     connect(m_anniversaryItemsWidget, &QListWidget::itemClicked, this, &MainWindow::onAnniversaryItemClicked);
     connect(m_anniversaryDetailView, &AnniversaryDetailView::backRequested, this, &MainWindow::onBackFromAnniversaryDetail);
-    connect(m_anniversaryService, &AnniversaryService::itemsChanged, this, &MainWindow::refreshAnniversaryCategories);
-    connect(m_anniversaryService, &AnniversaryService::itemsChanged, this, &MainWindow::refreshAnniversaryView);
+
+    connect(m_anniversaryService, &AnniversaryService::itemsChanged, this, &MainWindow::onAnniversaryDataChanged);
 
     connect(m_anniversaryDetailView, &AnniversaryDetailView::momentUpdated, this, &MainWindow::onAnniversaryMomentUpdated);
     connect(m_taskDetailWidget, &TaskDetailWidget::reminderChanged, this, &MainWindow::handleReminderChange);
@@ -904,19 +904,61 @@ void MainWindow::safeRefreshAnniversaryDetail(const QUuid& anniversaryId)
         // 从服务层获取最新的、包含已修改内容的数据模型
         if (const auto* updatedItem = m_anniversaryService->findItemById(anniversaryId)) {
             qDebug() << "Safely refreshing AnniversaryDetailView for item:" << anniversaryId;
+            // 将最新的数据模型重新设置给详情页，强制它用新数据重绘
             m_anniversaryDetailView->displayAnniversary(*updatedItem);
+        } else {
+            // 如果项目已被删除，则返回到概览页
+            onBackFromAnniversaryDetail();
         }
     }
 }
 
 
+// 【重要】确保 onMomentDeleteRequested 也使用异步刷新
 void MainWindow::onMomentDeleteRequested(const QUuid& anniversaryId, const QUuid& momentId)
 {
     m_anniversaryService->deleteMoment(anniversaryId, momentId);
 
-    // 【重要】在服务层发出 itemsChanged 信号后，UI会自动刷新概览页，
-    // 但详情页需要我们手动刷新，以确保数据同步
-    if (const auto* updatedItem = m_anniversaryService->findItemById(anniversaryId)) {
-        m_anniversaryDetailView->displayAnniversary(*updatedItem);
-    }
+    QTimer::singleShot(0, this, [this, anniversaryId]() {
+        safeRefreshAnniversaryDetail(anniversaryId);
+    });
+}
+
+// void MainWindow::onAnniversaryDataChanged()
+// {
+//     qDebug() << "[MainWindow] Detected AnniversaryService data change via itemsChanged() signal.";
+
+//     // 这两个函数负责刷新左侧的分类列表和主概览视图
+//     refreshAnniversaryCategories();
+//     refreshAnniversaryView();
+
+//     // 【核心刷新逻辑】检查详情页当前是否正在显示
+//     if (m_anniversaryContentStack->currentWidget() == m_anniversaryDetailView) {
+//         // 获取详情页当前正在显示的 AnniversaryItem 的 ID
+//         QUuid currentDetailId = m_anniversaryDetailView->currentItemId(); // (我们需要在下一步添加这个函数)
+
+//         if (!currentDetailId.isNull()) {
+//             qDebug() << "[MainWindow] AnniversaryDetailView is visible. Forcing refresh for item:" << currentDetailId;
+//             // 从服务层（唯一数据源）获取这个ID对应的、最新的数据模型
+//             if (const auto* updatedItem = m_anniversaryService->findItemById(currentDetailId)) {
+//                 // 将最新的数据模型重新设置给详情页，强制它用新数据重绘
+//                 m_anniversaryDetailView->displayAnniversary(*updatedItem);
+//             } else {
+//                 // 如果整个AnniversaryItem已被删除（虽然不是当前场景，但为了代码健壮性）
+//                 qDebug() << "[MainWindow] Item" << currentDetailId << "no longer exists. Returning to overview.";
+//                 onBackFromAnniversaryDetail();
+//             }
+//         }
+//     }
+// }
+
+void MainWindow::onAnniversaryDataChanged()
+{
+    qDebug() << "[MainWindow] Detected AnniversaryService data change via itemsChanged() signal.";
+
+    // 只刷新概览页和分类
+    refreshAnniversaryCategories();
+    refreshAnniversaryView();
+
+    // 【删除】此处不再需要刷新详情页的逻辑，因为它已经由 onAnniversaryMomentUpdated 和 onMomentDeleteRequested 异步处理了。
 }

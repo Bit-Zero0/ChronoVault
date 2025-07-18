@@ -269,7 +269,8 @@ void AnniversaryService::addMomentToItem(const QUuid& anniversaryId, const Momen
 {
     if (auto* item = findItemById(anniversaryId)) {
         item->addMoment(moment);
-        emit itemsChanged(); // 发射信号以供UI刷新
+        qDebug() << "[Service] Moment" << moment.id() << "added. Emitting itemsChanged() signal."; // 【新增日志】
+        emit itemsChanged();
         saveData();
     }
 }
@@ -315,18 +316,14 @@ void AnniversaryService::updateMoment(const QUuid& anniversaryId, const Moment& 
 void AnniversaryService::deleteMoment(const QUuid& anniversaryId, const QUuid& momentId)
 {
     if (auto* item = findItemById(anniversaryId)) {
-        // 使用 C++ 的 remove_if 来查找并删除匹配ID的 Moment
         int initialCount = item->moments().count();
         item->moments().removeIf([&](const Moment& moment){
             return moment.id() == momentId;
         });
 
-        // 如果真的删除了一个元素
         if (item->moments().count() < initialCount) {
-            qDebug() << "Service: Moment" << momentId << "successfully deleted from item" << anniversaryId;
-            // 发射信号，通知UI刷新
-            emit itemsChanged();
-            // 保存更改
+            qDebug() << "[Service] Moment" << momentId << "deleted. Emitting itemsChanged() signal.";
+            emit itemsChanged(); // 【关键】这个信号是通知外界数据已改变
             saveData();
         }
     }

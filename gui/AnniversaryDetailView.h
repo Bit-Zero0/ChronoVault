@@ -19,6 +19,7 @@ class AnniversaryDetailView : public QWidget
 public:
     explicit AnniversaryDetailView(QWidget* parent = nullptr);
     void displayAnniversary(const AnniversaryItem& item);
+    QUuid currentItemId() const;
 
 signals:
     void backRequested();
@@ -40,6 +41,7 @@ private:
     QString formatRemainingTime(qint64 seconds) const;
     void performAutoSave();
 
+    QLabel* m_momentsHeader;
     AnniversaryItem m_currentItem;
     QTimer* m_countdownTimer;
     QTimer* m_autoScrollTimer; // 【新增】自动滚动的定时器
@@ -52,4 +54,5 @@ private:
     QScrollArea* m_momentsScrollArea;
     QWidget* m_momentsContainer;
     QHBoxLayout* m_momentsLayout;
+
 };

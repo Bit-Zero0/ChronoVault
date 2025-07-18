@@ -35,7 +35,7 @@ void AnniversaryDetailView::setupUi() {
 
     QHBoxLayout* navLayout = new QHBoxLayout();
     m_backButton = new QToolButton();
-    m_backButton->setText(tr("⬅️ 返回概览"));
+    m_backButton->setText(tr("⬅️"));
     m_backButton->setAutoRaise(true);
     m_backButton->setStyleSheet("QToolButton { border: none; font-size: 14px; color: #0078d4; }");
     connect(m_backButton, &QToolButton::clicked, this, &AnniversaryDetailView::backRequested);
@@ -57,18 +57,20 @@ void AnniversaryDetailView::setupUi() {
     m_momentsScrollArea->setStyleSheet("QScrollArea { border: 1px solid #e0e0e0; border-radius: 8px; background-color: white; }");
 
     // 【核心修正】确保内部容器和布局被正确创建和设置
-    QWidget* momentsContainer = new QWidget();
-    m_momentsLayout = new QHBoxLayout(momentsContainer);
-    m_momentsLayout->setSpacing(10);
-    m_momentsLayout->setAlignment(Qt::AlignLeft);
-    m_momentsScrollArea->setWidget(momentsContainer); // 将容器设置为滚动区域的控件
+    m_momentsHeader = new QLabel(tr("时光瞬间"));
+    m_momentsHeader->setStyleSheet("font-size: 16px; font-weight: bold; color: gray;");
+
+    m_momentsScrollArea = new QScrollArea();
+    m_momentsScrollArea->setWidgetResizable(true);
+    m_momentsScrollArea->setFixedHeight(150);
+    m_momentsScrollArea->setStyleSheet("QScrollArea { border: 1px solid #e0e0e0; border-radius: 8px; background-color: white; }");
 
     mainLayout->addLayout(navLayout);
     mainLayout->addWidget(m_titleLabel, 0, Qt::AlignCenter);
     mainLayout->addStretch(1);
     mainLayout->addWidget(m_countdownLabel, 0, Qt::AlignCenter);
     mainLayout->addStretch(2);
-    mainLayout->addWidget(momentsHeader);
+    mainLayout->addWidget(m_momentsHeader);
     mainLayout->addWidget(m_momentsScrollArea);
 }
 
@@ -76,59 +78,43 @@ void AnniversaryDetailView::setupUi() {
 
 void AnniversaryDetailView::displayAnniversary(const AnniversaryItem& item)
 {
-    qDebug() << "[DIAGNOSTIC 3] In AnniversaryDetailView::displayAnniversary, received item has"
-             << item.moments().count() << "moments.";
+    qDebug() << "[DisplayAnniversary] Refreshing view for item:" << item.id() << "with" << item.moments().count() << "moments.";
+    m_currentItem = item;
+    m_titleLabel->setText(m_currentItem.title());
 
-    // --- 【重要修正】智能刷新逻辑 ---
-    // 检查传入的 item 是否是第一次加载 (m_currentItem 无效) 或 是一个全新的 item
-    if (m_currentItem.id() != item.id()) {
-        // 如果是全新的 item，执行完整的重建流程
-        m_currentItem = item;
-        m_titleLabel->setText(m_currentItem.title());
+    // --- 【核心刷新逻辑】先销毁旧容器，再创建新容器 ---
 
-        // 清空旧的Moments
-        QLayoutItem* child;
-        while ((child = m_momentsLayout->takeAt(0)) != nullptr) {
-            if (child->widget()) {
-                delete child->widget();
-            }
-            delete child;
-        }
-
-        // 添加新的Moments卡片
-        for (const Moment& moment : item.moments()) {
-            MomentCardWidget* card = new MomentCardWidget(moment, this);
-            connect(card, &MomentCardWidget::clicked, this, &AnniversaryDetailView::onMomentCardClicked);
-
-            connect(card, &MomentCardWidget::deleteRequested, this, &AnniversaryDetailView::onMomentDeleteRequested);
-            m_momentsLayout->addWidget(card);
-        }
-        m_momentsLayout->addStretch();
-
-    } else {
-        // 如果只是更新当前的 item，执行“就地更新”
-        m_currentItem = item; // 先更新内部数据
-
-        // 遍历布局中现有的卡片
-        for (int i = 0; i < m_momentsLayout->count(); ++i) {
-            QLayoutItem* layoutItem = m_momentsLayout->itemAt(i);
-            if (auto* card = qobject_cast<MomentCardWidget*>(layoutItem->widget())) {
-                // 找到每个卡片对应的新数据并更新它
-                for (const Moment& newMomentData : m_currentItem.moments()) {
-                    if (card->moment().id() == newMomentData.id()) {
-                        card->updateData(newMomentData);
-                        break; // 找到后就跳出内层循环
-                    }
-                }
-            }
-        }
+    // 1. 获取并安全地删除旧的 widget (它会自动删除其上的旧布局和所有旧卡片)
+    QWidget* oldContainer = m_momentsScrollArea->takeWidget();
+    if (oldContainer) {
+        delete oldContainer;
     }
+
+    // 2. 创建一个全新的容器 widget 和布局
+    QWidget* momentsContainer = new QWidget(); // 不指定父对象，它将被 setWidget 管理
+    m_momentsLayout = new QHBoxLayout(momentsContainer);
+    m_momentsLayout->setSpacing(10);
+    m_momentsLayout->setAlignment(Qt::AlignLeft);
+    m_momentsLayout->setContentsMargins(5, 5, 5, 5); // 为卡片留出边距
+
+    // 3. 遍历最新的数据，用新数据填充新布局
+    for (const Moment& moment : m_currentItem.moments()) {
+        MomentCardWidget* card = new MomentCardWidget(moment, momentsContainer);
+        connect(card, &MomentCardWidget::clicked, this, &AnniversaryDetailView::onMomentCardClicked);
+        connect(card, &MomentCardWidget::deleteRequested, this, &AnniversaryDetailView::onMomentDeleteRequested);
+        m_momentsLayout->addWidget(card);
+    }
+    m_momentsLayout->addStretch();
+
+    // 4. 将全新的、填满内容的容器设置给 ScrollArea
+    m_momentsScrollArea->setWidget(momentsContainer);
 
     // --- 倒计时和滚动条的逻辑保持不变 ---
     updateCountdown();
-    if(m_momentsLayout->count() > 3) {
+    if (m_momentsLayout->count() > 3) {
         m_autoScrollTimer->start(30);
-    } else {
+    }
+    else {
         m_autoScrollTimer->stop();
     }
 }
@@ -229,4 +215,9 @@ void AnniversaryDetailView::onMomentDeleteRequested(const QUuid& momentId, const
         // 将 anniversaryId 和 momentId 一起发射出去
         emit momentDeleteRequested(m_currentItem.id(), momentId);
     }
+}
+
+QUuid AnniversaryDetailView::currentItemId() const
+{
+    return m_currentItem.id();
 }
