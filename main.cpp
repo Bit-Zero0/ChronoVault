@@ -10,7 +10,7 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    app.setQuitOnLastWindowClosed(false);
+    app.setQuitOnLastWindowClosed(true);
 
     QFont font("Microsoft YaHei UI");
     QApplication::setFont(font);

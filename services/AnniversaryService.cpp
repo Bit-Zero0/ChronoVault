@@ -69,28 +69,35 @@ void AnniversaryService::setTrayIcon(QSystemTrayIcon* trayIcon) {
     m_trayIcon = trayIcon;
 }
 
+// services/AnniversaryService.cpp
+
 void AnniversaryService::checkReminders() {
     if (!m_trayIcon) return;
 
     QDateTime now = QDateTime::currentDateTime();
-    bool dataChanged = false; // 标记是否有纪念日日期需要更新
+    bool dataChanged = false;
 
     for (AnniversaryItem& item : m_items) {
-        // 检查提醒时间是否已到
-        if (item.reminderDateTime().isValid() && item.reminderDateTime() <= now) {
+        // 【核心修正】在检查提醒时间前，增加一个额外的判断
+        // 确保只有当事件本身还在未来时，我们才处理它的提醒
+        // 这可以防止在倒计时结束的临界点发生意外的重复触发
+        if (item.targetDateTime() > now && item.reminderDateTime().isValid() && item.reminderDateTime() <= now) {
+
             qDebug() << "Anniversary Reminder Triggered:" << item.title();
             m_trayIcon->showMessage(
                 tr("ChronoVault 纪念日提醒"),
                 item.title(),
                 QSystemTrayIcon::Information,
                 5000
-            );
-            // 清除提醒时间，防止重复提醒
+                );
+
+            // 清除提醒时间，这是防止重复的关键
             item.setReminderDateTime(QDateTime());
             dataChanged = true;
         }
 
         // 检查目标时间是否已过，以便为周期性事件计算下一个日期
+        // (这部分逻辑保持不变)
         if (item.targetDateTime().isValid() && item.targetDateTime() <= now) {
             if (item.recurrence() != AnniversaryRecurrence::None) {
                 calculateNextTargetDateTime(item);
@@ -100,7 +107,7 @@ void AnniversaryService::checkReminders() {
     }
 
     if (dataChanged) {
-        emit itemsChanged(); // 通知UI刷新（例如更新倒计时天数）
+        emit itemsChanged();
         saveData();
     }
 }

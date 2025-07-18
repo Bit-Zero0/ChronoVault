@@ -195,6 +195,8 @@ void MainWindow::setupConnections() {
     connect(m_taskDetailWidget, &TaskDetailWidget::reminderChanged, this, &MainWindow::handleReminderChange);
 
     connect(m_anniversaryDetailView, &AnniversaryDetailView::momentDeleteRequested, this, &MainWindow::onMomentDeleteRequested);
+    connect(m_anniversaryDetailView, &AnniversaryDetailView::momentAdded, this, &MainWindow::onMomentAdded);
+    connect(m_anniversaryDetailView, &AnniversaryDetailView::refreshRequested, this, &MainWindow::safeRefreshAnniversaryDetail);
 
 
 
@@ -924,33 +926,12 @@ void MainWindow::onMomentDeleteRequested(const QUuid& anniversaryId, const QUuid
     });
 }
 
-// void MainWindow::onAnniversaryDataChanged()
-// {
-//     qDebug() << "[MainWindow] Detected AnniversaryService data change via itemsChanged() signal.";
-
-//     // 这两个函数负责刷新左侧的分类列表和主概览视图
-//     refreshAnniversaryCategories();
-//     refreshAnniversaryView();
-
-//     // 【核心刷新逻辑】检查详情页当前是否正在显示
-//     if (m_anniversaryContentStack->currentWidget() == m_anniversaryDetailView) {
-//         // 获取详情页当前正在显示的 AnniversaryItem 的 ID
-//         QUuid currentDetailId = m_anniversaryDetailView->currentItemId(); // (我们需要在下一步添加这个函数)
-
-//         if (!currentDetailId.isNull()) {
-//             qDebug() << "[MainWindow] AnniversaryDetailView is visible. Forcing refresh for item:" << currentDetailId;
-//             // 从服务层（唯一数据源）获取这个ID对应的、最新的数据模型
-//             if (const auto* updatedItem = m_anniversaryService->findItemById(currentDetailId)) {
-//                 // 将最新的数据模型重新设置给详情页，强制它用新数据重绘
-//                 m_anniversaryDetailView->displayAnniversary(*updatedItem);
-//             } else {
-//                 // 如果整个AnniversaryItem已被删除（虽然不是当前场景，但为了代码健壮性）
-//                 qDebug() << "[MainWindow] Item" << currentDetailId << "no longer exists. Returning to overview.";
-//                 onBackFromAnniversaryDetail();
-//             }
-//         }
-//     }
-// }
+void MainWindow::onMomentAdded(const QUuid& anniversaryId, const Moment& newMoment)
+{
+    m_anniversaryService->addMomentToItem(anniversaryId, newMoment);
+    // 调用服务后，服务层会自动发射 itemsChanged() 信号，
+    // 我们之前建立的 onAnniversaryDataChanged 槽会负责刷新所有UI，无需在此处编写刷新代码。
+}
 
 void MainWindow::onAnniversaryDataChanged()
 {

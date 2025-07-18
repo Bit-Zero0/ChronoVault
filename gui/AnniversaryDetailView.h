@@ -25,6 +25,8 @@ signals:
     void backRequested();
     void momentUpdated(const QUuid& anniversaryId, const Moment& updatedMoment);
     void momentDeleteRequested(const QUuid& anniversaryId, const QUuid& momentId);
+    void momentAdded(const QUuid& anniversaryId, const Moment& newMoment);
+    void refreshRequested(const QUuid& anniversaryId);
 
 protected:
     // 重写事件过滤器，用于监听鼠标进入/离开滚动区域
@@ -35,6 +37,8 @@ private slots:
     void onMomentCardClicked(const Moment& moment);
     void autoScrollMoments(); // 【新增】用于自动滚动的槽函数
     void onMomentDeleteRequested(const QUuid& momentId, const QString& momentText);
+    void onAddMomentClicked();
+
 
 private:
     void setupUi();
@@ -54,5 +58,6 @@ private:
     QScrollArea* m_momentsScrollArea;
     QWidget* m_momentsContainer;
     QHBoxLayout* m_momentsLayout;
+    QToolButton* m_addMomentButton;
 
 };
