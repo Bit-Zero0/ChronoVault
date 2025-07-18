@@ -2,6 +2,10 @@
 
 #include <QMainWindow>
 #include "core/Moment.h"
+#include "core/TodoItem.h"
+#include "core/Reminder.h"
+#include "core/SubTask.h"
+
 // Forward declarations
 class TodoService;
 class AnniversaryService;
@@ -28,7 +32,7 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget* parent = nullptr);
-    ~MainWindow();
+
 
 private slots:
     // Module Switching
@@ -64,6 +68,7 @@ private slots:
     // Anniversary Module Slots
     void refreshAnniversaryView();
     void refreshAnniversaryCategories();
+
     void onAnniversaryCategoryChanged();
     void showAnniversaryCategoryContextMenu(const QPoint& pos);
     void onAddNewAnniversaryCategory();
@@ -77,6 +82,7 @@ private slots:
     void onAddMomentRequested(const QUuid& anniversaryId);
     void handleReminderChange(const QUuid& taskId, const Reminder& reminder);
     void onAnniversaryMomentUpdated(const QUuid& anniversaryId, const Moment& moment);
+    void safeRefreshAnniversaryDetail(const QUuid& anniversaryId);
 
 
 private:

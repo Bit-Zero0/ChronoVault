@@ -1,6 +1,7 @@
 #include "gui/AnniversaryDetailView.h"
 #include "gui/MomentCardWidget.h"
 #include "gui/MomentDetailDialog.h"
+#include "core/Moment.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -148,20 +149,7 @@ QString AnniversaryDetailView::formatRemainingTime(qint64 totalSeconds) const {
     return result;
 }
 
-//void AnniversaryDetailView::onMomentCardClicked(const Moment& moment)
-//{
-//    // 【修改】创建对话框时，传入当前纪念日的ID
-//    MomentDetailDialog dialog(moment, m_currentItem.id(), this);
 
-//    // 【新增】连接对话框的 momentUpdated 信号到服务层
-//    // 我们使用 lambda 表达式来简化这个连接
-//    connect(&dialog, &MomentDetailDialog::momentUpdated, this, [this](const Moment& updatedMoment){
-//        // 命令服务层去更新这个 Moment
-//        m_anniversaryService->updateMoment(m_currentItem.id(), updatedMoment);
-//    });
-
-//    dialog.exec();
-//}
 
 bool AnniversaryDetailView::eventFilter(QObject *watched, QEvent *event)
 {
@@ -194,16 +182,22 @@ void AnniversaryDetailView::autoScrollMoments()
 
 void AnniversaryDetailView::onMomentCardClicked(const Moment& moment)
 {
-    MomentDetailDialog dialog(moment, m_currentItem.id(), this);
-
-    // 【核心修正】使用一个直接的、类型安全的信号-信号连接
-    // 将 dialog 发出的 momentUpdated 信号，直接转发给 AnniversaryDetailView 自己发出的同名信号
-    connect(&dialog, &MomentDetailDialog::momentUpdated,
-            this, &AnniversaryDetailView::momentUpdated);
-
+    // 1. 创建并以模态方式运行对话框
+    MomentDetailDialog dialog(moment, this);
     dialog.exec();
-}
 
+    // 2. 安全地获取最终数据
+    Moment finalMoment = dialog.getMoment();
+
+    // 3. 检查数据是否真的发生了变化
+    if (finalMoment.text() != moment.text() || finalMoment.imagePaths() != moment.imagePaths()) {
+        qDebug() << "Moment data has changed, initiating update for item:" << m_currentItem.id();
+
+        // 【重要修正】不再直接调用 displayAnniversary
+        // 只发射信号，将更新的责任完全交给 MainWindow
+        emit momentUpdated(m_currentItem.id(), finalMoment);
+    }
+}
 //void MomentDetailDialog::performAutoSave()
 //{
 //    // 1. 更新 Moment 对象的内容

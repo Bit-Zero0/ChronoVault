@@ -11,6 +11,9 @@
 #include "gui/TodoListItemWidget.h"
 #include "gui/TodoListNameWidget.h"
 #include "gui/CompletedHeaderWidget.h"
+#include "core/SubTask.h"
+
+
 
 #include <QSplitter>
 #include <QVBoxLayout>
@@ -26,6 +29,7 @@
 #include <QMessageBox>
 #include <QMenu>
 #include <QDebug>
+#include <QTimer>
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     m_todoService = TodoService::instance();
     m_anniversaryService = AnniversaryService::instance();
@@ -40,7 +44,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     refreshAnniversaryView();
 }
 
-MainWindow::~MainWindow() {}
+
 
 
 
@@ -195,8 +199,15 @@ void MainWindow::setupConnections() {
 
 void MainWindow::onAnniversaryMomentUpdated(const QUuid& anniversaryId, const Moment& moment)
 {
-    // 主窗口作为总指挥，命令服务层去更新数据
+    // 1. 命令服务层去更新并保存后台数据。
     m_anniversaryService->updateMoment(anniversaryId, moment);
+
+    // 2. 【核心修正】使用单次定时器实现异步刷新
+    // 这会将 safeRefreshAnniversaryDetail 的调用“帖子”Qt的事件队列末尾。
+    // 它会在当前所有函数（包括 onMomentCardClicked）都执行完毕并返回后，才被安全地执行。
+    QTimer::singleShot(0, this, [this, anniversaryId]() {
+        safeRefreshAnniversaryDetail(anniversaryId);
+    });
 }
 
 void MainWindow::onDetailCloseRequested() {
@@ -879,5 +890,17 @@ void MainWindow::handleReminderChange(const QUuid& taskId, const Reminder& remin
         TodoItem updatedTask = *task;
         updatedTask.setReminder(reminder);
         m_todoService->updateTodoInList(listId, updatedTask);
+    }
+}
+
+void MainWindow::safeRefreshAnniversaryDetail(const QUuid& anniversaryId)
+{
+    // 检查详情页是否仍然可见
+    if (m_anniversaryContentStack->currentWidget() == m_anniversaryDetailView) {
+        // 从服务层获取最新的、包含已修改内容的数据模型
+        if (const auto* updatedItem = m_anniversaryService->findItemById(anniversaryId)) {
+            qDebug() << "Safely refreshing AnniversaryDetailView for item:" << anniversaryId;
+            m_anniversaryDetailView->displayAnniversary(*updatedItem);
+        }
     }
 }

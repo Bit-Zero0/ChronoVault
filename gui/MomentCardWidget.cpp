@@ -10,6 +10,11 @@ MomentCardWidget::MomentCardWidget(const Moment& moment, QWidget *parent)
     setupUi(moment);
 }
 
+MomentCardWidget::~MomentCardWidget()
+{
+    qDebug() << "Destroying MomentCardWidget for moment ID:" << m_moment.id();
+}
+
 void MomentCardWidget::setupUi(const Moment& moment) {
     setFrameStyle(QFrame::StyledPanel | QFrame::Plain);
     setCursor(Qt::PointingHandCursor);

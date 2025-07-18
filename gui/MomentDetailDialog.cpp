@@ -1,6 +1,7 @@
 #include "gui/MomentDetailDialog.h"
 #include "gui/ImageViewerDialog.h"
 #include "gui/ClickableLabel.h"
+
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -13,28 +14,23 @@
 #include <QDebug>
 #include <QDialogButtonBox>
 
-MomentDetailDialog::MomentDetailDialog(const Moment& moment, const QUuid& anniversaryId, QWidget *parent)
-    : QDialog(parent), m_currentMoment(moment), m_anniversaryId(anniversaryId)
+MomentDetailDialog::MomentDetailDialog(const Moment& moment, QWidget *parent)
+    : QDialog(parent), m_currentMoment(moment)
 {
     setupUi(moment);
 
-    // 初始化自动保存定时器
-    m_autoSaveTimer = new QTimer(this);
-    m_autoSaveTimer->setInterval(500); // 停止输入0.5秒后保存
-    m_autoSaveTimer->setSingleShot(true);
-    connect(m_autoSaveTimer, &QTimer::timeout, this, &MomentDetailDialog::performAutoSave);
 
-    // 初始化切换到预览模式的定时器
-    m_switchToPreviewTimer = new QTimer(this);
-    m_switchToPreviewTimer->setInterval(5000); // 停止输入5秒后预览
-    m_switchToPreviewTimer->setSingleShot(true);
-    connect(m_switchToPreviewTimer, &QTimer::timeout, this, &MomentDetailDialog::switchToPreviewMode);
 
-    // 连接文本变化的信号
-    connect(m_textEdit, &QTextEdit::textChanged, this, &MomentDetailDialog::onTextChanged);
+    // m_switchToPreviewTimer = new QTimer(this);
+    // m_switchToPreviewTimer->setInterval(3000); // 停止输入3秒后切换到预览
+    // m_switchToPreviewTimer->setSingleShot(true);
+    // connect(m_switchToPreviewTimer, &QTimer::timeout, this, &MomentDetailDialog::switchToPreviewMode);
+
+    // // 连接文本变化的信号
+    // connect(m_textEdit, &QTextEdit::textChanged, this, &MomentDetailDialog::onTextChanged);
 }
 
-MomentDetailDialog::~MomentDetailDialog() {}
+MomentDetailDialog::~MomentDetailDialog() = default;
 
 void MomentDetailDialog::setupUi(const Moment& moment)
 {
@@ -105,20 +101,16 @@ void MomentDetailDialog::setupUi(const Moment& moment)
     //=========================================================================
     // 3. 构建文本编辑/预览区域
     //=========================================================================
-    m_textStack = new QStackedWidget();
+    m_textStack = new QStackedWidget(this);
 
-    // 编辑视图
-    m_textEdit = new QTextEdit();
-    m_textEdit->setPlainText(moment.text()); // 使用 setMarkdown 以保留格式
-    m_textEdit->setStyleSheet("QTextEdit { border: 1px solid #e0e0e0; background-color: white; border-radius: 4px; padding: 5px; }");
+    m_textEdit = new QTextEdit(this);
+    m_textEdit->setPlainText(moment.text());
 
-    // 预览视图
-    m_textBrowser = new QTextBrowser();
+
+
+    m_textBrowser = new ClickableTextBrowser(); // 确保 ClickableTextBrowser 类型已定义
     m_textBrowser->setOpenExternalLinks(true);
-    m_textBrowser->setStyleSheet("QTextBrowser { border: 1px solid #e0e0e0; background-color: white; border-radius: 4px; padding: 5px; }");
-    // 【核心修正】为预览框安装事件过滤器
-    m_textBrowser->installEventFilter(this);
-
+    connect(m_textBrowser, &ClickableTextBrowser::clicked, this, &MomentDetailDialog::switchToEditMode);
 
     m_textStack->addWidget(m_textEdit);
     m_textStack->addWidget(m_textBrowser);
@@ -137,7 +129,13 @@ void MomentDetailDialog::setupUi(const Moment& moment)
     // 连接图片切换按钮的信号
     connect(m_prevButton, &QToolButton::clicked, this, &MomentDetailDialog::showPreviousImage);
     connect(m_nextButton, &QToolButton::clicked, this, &MomentDetailDialog::showNextImage);
+
+    connect(m_textBrowser, &ClickableTextBrowser::clicked, this, &MomentDetailDialog::switchToEditMode);
+
+
+    switchToPreviewMode();
 }
+
 
 void MomentDetailDialog::showPreviousImage() {
     int newIndex = m_imageStack->currentIndex() - 1;
@@ -161,33 +159,27 @@ void MomentDetailDialog::updateImageCounter() {
 }
 
 // 当文本框内容改变时，启动(或重置)自动保存定时器
-void MomentDetailDialog::onTextChanged()
-{
-    m_isDirty = true; // 标记为“脏”，表示有未保存的修改
-    m_autoSaveTimer->start(); // 重启自动保存定时器
-    m_switchToPreviewTimer->start(); // 重启切换预览定时器
-}
+// void MomentDetailDialog::onTextChanged()
+// {
+//     m_isDirty = true;
+//     // 重启两个定时器
+
+//     if(m_switchToPreviewTimer) m_switchToPreviewTimer->start();
+// }
 
 void MomentDetailDialog::switchToEditMode()
 {
     m_textStack->setCurrentWidget(m_textEdit);
     m_textEdit->setFocus();
-    // 将光标移动到文本末尾
-    QTextCursor cursor = m_textEdit->textCursor();
-    cursor.movePosition(QTextCursor::End);
-    m_textEdit->setTextCursor(cursor);
 }
 
 // 切换到预览模式
 void MomentDetailDialog::switchToPreviewMode()
 {
-    // 【核心修正】确保在预览前，所有修改都已保存
-    if (m_isDirty) {
-        performAutoSave();
-    }
-    m_textBrowser->setMarkdown(m_textEdit->toMarkdown());
+    m_textBrowser->setMarkdown(m_textEdit->toPlainText());
     m_textStack->setCurrentWidget(m_textBrowser);
 }
+
 
 // 事件过滤器，用于处理预览视图的点击
 bool MomentDetailDialog::eventFilter(QObject *watched, QEvent *event)
@@ -199,29 +191,18 @@ bool MomentDetailDialog::eventFilter(QObject *watched, QEvent *event)
     return QDialog::eventFilter(watched, event);
 }
 
-// 执行实际的保存操作
-void MomentDetailDialog::performAutoSave()
-{
-    if (!m_isDirty) return;
 
-    // 【核心修正】使用 toPlainText() 获取并保存原始Markdown文本
-    m_currentMoment.setText(m_textEdit->toPlainText());
-    emit momentUpdated(m_anniversaryId, m_currentMoment);
-    m_isDirty = false;
-    qDebug() << "Auto-saved moment:" << m_currentMoment.id();
-}
 
 void MomentDetailDialog::closeEvent(QCloseEvent *event)
 {
-    // 如果定时器正在等待，说明有刚输入的、还未触发保存的修改
-    if (m_autoSaveTimer->isActive()) {
-        m_autoSaveTimer->stop(); // 停止定时器
-        performAutoSave();       // 立即执行保存
-    }
-    // 检查是否还有其他未保存的修改
-    else if (m_isDirty) {
-        performAutoSave();
-    }
-    event->accept();
+    // 在窗口关闭的最后时刻，将UI上的数据更新到内部的 m_currentMoment 成员中
+    m_currentMoment.setText(m_textEdit->toPlainText());
+    // 注意：这里不再需要 m_isDirty 标志，因为我们总是以UI上的最终状态为准
+
+    event->accept(); // 允许窗口关闭
 }
 
+// 公共接口，让外部可以获取最终修改后的 Moment 对象
+Moment MomentDetailDialog::getMoment() const {
+    return m_currentMoment;
+}

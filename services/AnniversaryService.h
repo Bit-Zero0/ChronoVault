@@ -14,7 +14,7 @@ public:
     static AnniversaryService* instance();
     ~AnniversaryService();
 
-    // --- ¹«¹²½Ó¿Ú ---
+    // --- å…¬å…±æ¥å£ ---
     const QList<AnniversaryItem>& getAllItems() const;
     void addItem(const AnniversaryItem& item);
     void deleteItem(const QUuid& id);
@@ -27,7 +27,7 @@ public:
     void deleteCategory(const QString& categoryName);
     void renameCategory(const QString& oldName, const QString& newName);
 
-    // ÓÃÓÚ´Ó main.cpp ½ÓÊÕÏµÍ³ÍĞÅÌÍ¼±êÖ¸Õë
+    // ç”¨äºä» main.cpp æ¥æ”¶ç³»ç»Ÿæ‰˜ç›˜å›¾æ ‡æŒ‡é’ˆ
     void setTrayIcon(QSystemTrayIcon* trayIcon);
 
     void addMomentToItem(const QUuid& anniversaryId, const Moment& moment);
@@ -35,11 +35,11 @@ public:
     void updateMoment(const QUuid& anniversaryId, const Moment& updatedMoment);
 
 signals:
-    // µ±¼ÍÄîÈÕÁĞ±í·¢Éú±ä»¯Ê±£¬·¢Éä´ËĞÅºÅÍ¨ÖªUIË¢ĞÂ
+    // å½“çºªå¿µæ—¥åˆ—è¡¨å‘ç”Ÿå˜åŒ–æ—¶ï¼Œå‘å°„æ­¤ä¿¡å·é€šçŸ¥UIåˆ·æ–°
     void itemsChanged();
 
 private slots:
-    // ¶¨Ê±Æ÷´¥·¢Ê±µ÷ÓÃµÄ²Ûº¯Êı
+    // å®šæ—¶å™¨è§¦å‘æ—¶è°ƒç”¨çš„æ§½å‡½æ•°
     void checkReminders();
 
 private:
@@ -49,14 +49,14 @@ private:
 
     void saveDataInBackground(const QList<AnniversaryItem> listsToSave) const;
 
-    // Ë½ÓĞ¸¨Öúº¯Êı
+    // ç§æœ‰è¾…åŠ©å‡½æ•°
     void loadData();
     void saveData() const;
-    void calculateNextTargetDateTime(AnniversaryItem& item); // ¡¾ºËĞÄ¡¿¼ÆËãÏÂ´Î·¢ÉúÊ±¼äµÄº¯Êı
+    void calculateNextTargetDateTime(AnniversaryItem& item); // ã€æ ¸å¿ƒã€‘è®¡ç®—ä¸‹æ¬¡å‘ç”Ÿæ—¶é—´çš„å‡½æ•°
 
-    QList<AnniversaryItem> m_items;     // ÄÚ´æÖĞ³ÖÓĞµÄËùÓĞ¼ÍÄîÈÕÏîÄ¿
-    QString m_savePath;                 // Êı¾İ±£´æÂ·¾¶ (anniversaries.json)
-    QTimer* m_reminderTimer;            // ÓÃÓÚ¼ì²éÌáĞÑµÄ¶¨Ê±Æ÷
-    QSystemTrayIcon* m_trayIcon;        // ÏµÍ³ÍĞÅÌÍ¼±ê£¬ÓÃÓÚ·¢ËÍÍ¨Öª
+    QList<AnniversaryItem> m_items;     // å†…å­˜ä¸­æŒæœ‰çš„æ‰€æœ‰çºªå¿µæ—¥é¡¹ç›®
+    QString m_savePath;                 // æ•°æ®ä¿å­˜è·¯å¾„ (anniversaries.json)
+    QTimer* m_reminderTimer;            // ç”¨äºæ£€æŸ¥æé†’çš„å®šæ—¶å™¨
+    QSystemTrayIcon* m_trayIcon;        // ç³»ç»Ÿæ‰˜ç›˜å›¾æ ‡ï¼Œç”¨äºå‘é€é€šçŸ¥
     QStringList m_categories;
 };

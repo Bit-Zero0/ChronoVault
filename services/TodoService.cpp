@@ -1,4 +1,4 @@
-﻿#include "services/TodoService.h"
+#include "services/TodoService.h"
 #include <QStandardPaths>
 #include <QDir>
 #include <QFile>

@@ -41,6 +41,7 @@ set(PROJECT_SOURCES
     gui/TodoListNameWidget.cpp
     gui/completedheaderwidget.h
     gui/completedheaderwidget.cpp
+    gui/AnniversaryItemWidget.h gui/AnniversaryItemWidget.cpp
 )
 
 # 定义资源文件列表
@@ -53,7 +54,7 @@ qt_add_executable(ChronoVault
     MANUAL_FINALIZATION
     ${PROJECT_SOURCES}
     ${PROJECT_RESOURCES}
-    gui/AnniversaryItemWidget.h gui/AnniversaryItemWidget.cpp
+
     gui/AddAnniversaryDialog.h gui/AddAnniversaryDialog.cpp
     core/Reminder.h
     gui/TodoListSelectionDialog.h gui/TodoListSelectionDialog.cpp
@@ -66,6 +67,10 @@ qt_add_executable(ChronoVault
     gui/MomentDetailDialog.h gui/MomentDetailDialog.cpp
     gui/ImageViewerDialog.h gui/ImageViewerDialog.cpp
     gui/ClickableLabel.h gui/ClickableLabel.cpp
+    gui/ClickableTextBrowser.h
+
+
+
 
 )
 

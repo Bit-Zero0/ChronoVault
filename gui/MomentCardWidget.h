@@ -13,6 +13,7 @@ class MomentCardWidget : public QFrame
 
 public:
     explicit MomentCardWidget(const Moment& moment, QWidget *parent = nullptr);
+    ~MomentCardWidget();
 
 signals:
     void clicked(const Moment& moment);

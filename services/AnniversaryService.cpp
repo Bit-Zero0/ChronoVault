@@ -13,25 +13,25 @@ AnniversaryService* AnniversaryService::instance() {
 }
 
 AnniversaryService::AnniversaryService(QObject* parent) : QObject(parent), m_trayIcon(nullptr) {
-    // ³õÊ¼»¯±£´æÂ·¾¶
+    // åˆå§‹åŒ–ä¿å­˜è·¯å¾„
     QString dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     if (dataDir.isEmpty()) { dataDir = "data"; }
     QDir dir(dataDir);
     if (!dir.exists()) { dir.mkpath("."); }
     m_savePath = dataDir + "/anniversaries.json";
 
-    // ¼ÓÔØÊı¾İ
+    // åŠ è½½æ•°æ®
     loadData();
 
-    // ÉèÖÃ²¢Æô¶¯¶¨Ê±Æ÷£¬Ã¿Ãë¼ì²éÒ»´ÎÌáĞÑ
+    // è®¾ç½®å¹¶å¯åŠ¨å®šæ—¶å™¨ï¼Œæ¯ç§’æ£€æŸ¥ä¸€æ¬¡æé†’
     m_reminderTimer = new QTimer(this);
     connect(m_reminderTimer, &QTimer::timeout, this, &AnniversaryService::checkReminders);
     m_reminderTimer->start(1000);
 }
 
 AnniversaryService::~AnniversaryService() {
-    // ÔÚ³ÌĞòÍË³öÊ±£¬²»ÔÙÊ¹ÓÃºóÌ¨Ïß³Ì£¬¶øÊÇÖ±½Ó¡¢Í¬²½µØµ÷ÓÃ±£´æº¯Êı
-    // È·±£Êı¾İÒ»¶¨ÄÜ±»ÍêÕûĞ´Èëºó£¬³ÌĞò²ÅÍË³ö¡£
+    // åœ¨ç¨‹åºé€€å‡ºæ—¶ï¼Œä¸å†ä½¿ç”¨åå°çº¿ç¨‹ï¼Œè€Œæ˜¯ç›´æ¥ã€åŒæ­¥åœ°è°ƒç”¨ä¿å­˜å‡½æ•°
+    // ç¡®ä¿æ•°æ®ä¸€å®šèƒ½è¢«å®Œæ•´å†™å…¥åï¼Œç¨‹åºæ‰é€€å‡ºã€‚
     saveDataInBackground(m_items);
 }
 
@@ -48,7 +48,7 @@ void AnniversaryService::addCategory(const QString& categoryName) {
         return;
     }
     m_categories.append(categoryName);
-    emit itemsChanged(); // ÓÃÕâ¸öĞÅºÅÍ¬Ê±´¥·¢·ÖÀàºÍÏîÄ¿ÁĞ±íµÄË¢ĞÂ
+    emit itemsChanged(); // ç”¨è¿™ä¸ªä¿¡å·åŒæ—¶è§¦å‘åˆ†ç±»å’Œé¡¹ç›®åˆ—è¡¨çš„åˆ·æ–°
     saveData();
 }
 
@@ -73,24 +73,24 @@ void AnniversaryService::checkReminders() {
     if (!m_trayIcon) return;
 
     QDateTime now = QDateTime::currentDateTime();
-    bool dataChanged = false; // ±ê¼ÇÊÇ·ñÓĞ¼ÍÄîÈÕÈÕÆÚĞèÒª¸üĞÂ
+    bool dataChanged = false; // æ ‡è®°æ˜¯å¦æœ‰çºªå¿µæ—¥æ—¥æœŸéœ€è¦æ›´æ–°
 
     for (AnniversaryItem& item : m_items) {
-        // ¼ì²éÌáĞÑÊ±¼äÊÇ·ñÒÑµ½
+        // æ£€æŸ¥æé†’æ—¶é—´æ˜¯å¦å·²åˆ°
         if (item.reminderDateTime().isValid() && item.reminderDateTime() <= now) {
             qDebug() << "Anniversary Reminder Triggered:" << item.title();
             m_trayIcon->showMessage(
-                tr("ChronoVault ¼ÍÄîÈÕÌáĞÑ"),
+                tr("ChronoVault çºªå¿µæ—¥æé†’"),
                 item.title(),
                 QSystemTrayIcon::Information,
                 5000
             );
-            // Çå³ıÌáĞÑÊ±¼ä£¬·ÀÖ¹ÖØ¸´ÌáĞÑ
+            // æ¸…é™¤æé†’æ—¶é—´ï¼Œé˜²æ­¢é‡å¤æé†’
             item.setReminderDateTime(QDateTime());
             dataChanged = true;
         }
 
-        // ¼ì²éÄ¿±êÊ±¼äÊÇ·ñÒÑ¹ı£¬ÒÔ±ãÎªÖÜÆÚĞÔÊÂ¼ş¼ÆËãÏÂÒ»¸öÈÕÆÚ
+        // æ£€æŸ¥ç›®æ ‡æ—¶é—´æ˜¯å¦å·²è¿‡ï¼Œä»¥ä¾¿ä¸ºå‘¨æœŸæ€§äº‹ä»¶è®¡ç®—ä¸‹ä¸€ä¸ªæ—¥æœŸ
         if (item.targetDateTime().isValid() && item.targetDateTime() <= now) {
             if (item.recurrence() != AnniversaryRecurrence::None) {
                 calculateNextTargetDateTime(item);
@@ -100,7 +100,7 @@ void AnniversaryService::checkReminders() {
     }
 
     if (dataChanged) {
-        emit itemsChanged(); // Í¨ÖªUIË¢ĞÂ£¨ÀıÈç¸üĞÂµ¹¼ÆÊ±ÌìÊı£©
+        emit itemsChanged(); // é€šçŸ¥UIåˆ·æ–°ï¼ˆä¾‹å¦‚æ›´æ–°å€’è®¡æ—¶å¤©æ•°ï¼‰
         saveData();
     }
 }
@@ -123,14 +123,14 @@ void AnniversaryService::calculateNextTargetDateTime(AnniversaryItem& item) {
         }
     }
     else {
-        return; // ·ÇÖÜÆÚĞÔÊÂ¼ş£¬ÎŞĞè¼ÆËã
+        return; // éå‘¨æœŸæ€§äº‹ä»¶ï¼Œæ— éœ€è®¡ç®—
     }
 
-    // ½«¼ÆËã³öµÄÏÂÒ»¸öÈÕÆÚ£¬ÓëÔ­Ê¼Ê±¼ä½áºÏ£¬ĞÎ³ÉÏÂÒ»¸öÄ¿±êQDateTime
+    // å°†è®¡ç®—å‡ºçš„ä¸‹ä¸€ä¸ªæ—¥æœŸï¼Œä¸åŸå§‹æ—¶é—´ç»“åˆï¼Œå½¢æˆä¸‹ä¸€ä¸ªç›®æ ‡QDateTime
     item.setTargetDateTime(QDateTime(nextDate, item.targetDateTime().time()));
 
-    // ÔÚÕâÀï£¬ÎÒÃÇ»¹¿ÉÒÔ¸ù¾İÓÃ»§µÄÉèÖÃ£¬ÖØĞÂ¼ÆËãÏÂÒ»´ÎµÄÌáĞÑÊ±¼ä
-    // ÀıÈç£ºitem.setReminderDateTime(item.targetDateTime().addDays(-3));
+    // åœ¨è¿™é‡Œï¼Œæˆ‘ä»¬è¿˜å¯ä»¥æ ¹æ®ç”¨æˆ·çš„è®¾ç½®ï¼Œé‡æ–°è®¡ç®—ä¸‹ä¸€æ¬¡çš„æé†’æ—¶é—´
+    // ä¾‹å¦‚ï¼šitem.setReminderDateTime(item.targetDateTime().addDays(-3));
     qDebug() << "Calculated next occurrence for" << item.title() << "is" << item.targetDateTime();
 }
 
@@ -159,7 +159,7 @@ void AnniversaryService::loadData() {
         }
     }
 
-    // ¡¾Õï¶ÏÈÕÖ¾ 1¡¿¼ì²é¼ÓÔØµ½·şÎñ²ãºó£¬µÚÒ»¸öÏîÄ¿ÓĞ¶àÉÙ¸ö¡°Ë²¼ä¡±
+    // ã€è¯Šæ–­æ—¥å¿— 1ã€‘æ£€æŸ¥åŠ è½½åˆ°æœåŠ¡å±‚åï¼Œç¬¬ä¸€ä¸ªé¡¹ç›®æœ‰å¤šå°‘ä¸ªâ€œç¬é—´â€
     if (!m_items.isEmpty()) {
         qDebug() << "[DIAGNOSTIC 1] In AnniversaryService::loadData, first item has"
                  << m_items.first().moments().count() << "moments.";
@@ -169,15 +169,15 @@ void AnniversaryService::loadData() {
 }
 
 void AnniversaryService::saveData() const {
-    // ÔÚ³ÌĞòÕı³£ÔËĞĞÊ±£¬ÒÀÈ»Ê¹ÓÃºóÌ¨Ïß³Ì±£´æ£¬±ÜÃâUI¿¨¶Ù
-    // Í¨¹ı (void) ×ª»»£¬Ã÷È·¸æËß±àÒëÆ÷ÎÒÃÇ¡°ÓĞÒâºöÂÔ¡±·µ»ØÖµ£¬ÒÔÏû³ı¾¯¸æ
+    // åœ¨ç¨‹åºæ­£å¸¸è¿è¡Œæ—¶ï¼Œä¾ç„¶ä½¿ç”¨åå°çº¿ç¨‹ä¿å­˜ï¼Œé¿å…UIå¡é¡¿
+    // é€šè¿‡ (void) è½¬æ¢ï¼Œæ˜ç¡®å‘Šè¯‰ç¼–è¯‘å™¨æˆ‘ä»¬â€œæœ‰æ„å¿½ç•¥â€è¿”å›å€¼ï¼Œä»¥æ¶ˆé™¤è­¦å‘Š
     (void)QtConcurrent::run([this, lists = this->m_items] {
         this->saveDataInBackground(lists);
     });
 }
 
 void AnniversaryService::deleteItem(const QUuid& id) {
-    if (id.isNull()) return; // Ôö¼Ó¶Ônull idµÄ·ÀÓù
+    if (id.isNull()) return; // å¢åŠ å¯¹null idçš„é˜²å¾¡
     const int initialCount = m_items.count();
     m_items.removeIf([id](const AnniversaryItem& item) {
         return item.id() == id;
@@ -203,7 +203,7 @@ void AnniversaryService::markAsAddedToTodo(const QUuid& id)
 {
     if (auto* item = findItemById(id)) {
         item->setAddedToTodo(true);
-        emit itemsChanged(); // ·¢ÉäĞÅºÅ£¬ÈÃUIË¢ĞÂ£¨°´Å¥»áÏûÊ§£©
+        emit itemsChanged(); // å‘å°„ä¿¡å·ï¼Œè®©UIåˆ·æ–°ï¼ˆæŒ‰é’®ä¼šæ¶ˆå¤±ï¼‰
         saveData();
     }
 }
@@ -212,48 +212,48 @@ void AnniversaryService::updateTargetDateTime(const QUuid& id, const QDateTime& 
 {
     if (auto* item = findItemById(id)) {
         item->setTargetDateTime(newDateTime);
-        // Èç¹ûÌáĞÑÊ±¼äÍíÓÚĞÂµÄÄ¿±êÊ±¼ä£¬Ò²Ò»²¢¸üĞÂÌáĞÑÊ±¼ä
+        // å¦‚æœæé†’æ—¶é—´æ™šäºæ–°çš„ç›®æ ‡æ—¶é—´ï¼Œä¹Ÿä¸€å¹¶æ›´æ–°æé†’æ—¶é—´
         if (item->reminderDateTime() > newDateTime) {
             item->setReminderDateTime(newDateTime);
         }
-        emit itemsChanged(); // Í¨ÖªUIË¢ĞÂµ¹¼ÆÊ±
+        emit itemsChanged(); // é€šçŸ¥UIåˆ·æ–°å€’è®¡æ—¶
         saveData();
     }
 }
 
 //void AnniversaryService::removeCategory(const QString& categoryName)
 //{
-//    if (categoryName.isEmpty() || categoryName == tr("ËùÓĞÏîÄ¿")) {
-//        return; // ²»ÔÊĞíÉ¾³ı¡°ËùÓĞÏîÄ¿¡±Õâ¸öĞéÄâ·ÖÀà
+//    if (categoryName.isEmpty() || categoryName == tr("æ‰€æœ‰é¡¹ç›®")) {
+//        return; // ä¸å…è®¸åˆ é™¤â€œæ‰€æœ‰é¡¹ç›®â€è¿™ä¸ªè™šæ‹Ÿåˆ†ç±»
 //    }
 
 //    bool changed = false;
 //    for (auto& item : m_items) {
 //        if (item.category() == categoryName) {
-//            item.setCategory(""); // ½«·ÖÀàÇå¿Õ
+//            item.setCategory(""); // å°†åˆ†ç±»æ¸…ç©º
 //            changed = true;
 //        }
 //    }
 
 //    if (changed) {
-//        emit itemsChanged(); // ·¢ÉäĞÅºÅ£¬´¥·¢UIË¢ĞÂ
+//        emit itemsChanged(); // å‘å°„ä¿¡å·ï¼Œè§¦å‘UIåˆ·æ–°
 //        saveData();
 //    }
 //}
 
 
-// É¾³ı·ÖÀàµÄÂß¼­
+// åˆ é™¤åˆ†ç±»çš„é€»è¾‘
 void AnniversaryService::deleteCategory(const QString& categoryName) {
     if (!m_categories.contains(categoryName)) return;
 
-    // µ¯³öÈ·ÈÏ¶Ô»°¿òµÄÂß¼­Ó¦¸ÃÔÚUI²ã£¬·şÎñ²ãÖ»¸ºÔğÖ´ĞĞ
-    // ²½Öè1: ½«¸Ã·ÖÀàÏÂµÄËùÓĞÏîÄ¿±äÎª¡°Î´·ÖÀà¡±
+    // å¼¹å‡ºç¡®è®¤å¯¹è¯æ¡†çš„é€»è¾‘åº”è¯¥åœ¨UIå±‚ï¼ŒæœåŠ¡å±‚åªè´Ÿè´£æ‰§è¡Œ
+    // æ­¥éª¤1: å°†è¯¥åˆ†ç±»ä¸‹çš„æ‰€æœ‰é¡¹ç›®å˜ä¸ºâ€œæœªåˆ†ç±»â€
     for (auto& item : m_items) {
         if (item.category() == categoryName) {
             item.setCategory("");
         }
     }
-    // ²½Öè2: ´Ó·ÖÀàÁĞ±íÖĞÒÆ³ı¸Ã·ÖÀà
+    // æ­¥éª¤2: ä»åˆ†ç±»åˆ—è¡¨ä¸­ç§»é™¤è¯¥åˆ†ç±»
     m_categories.removeAll(categoryName);
 
     emit itemsChanged();
@@ -261,18 +261,18 @@ void AnniversaryService::deleteCategory(const QString& categoryName) {
 }
 
 
-// ÖØÃüÃû·ÖÀàµÄÂß¼­
+// é‡å‘½ååˆ†ç±»çš„é€»è¾‘
 void AnniversaryService::renameCategory(const QString& oldName, const QString& newName) {
     if (newName.isEmpty() || oldName == newName || m_categories.contains(newName)) {
         return;
     }
-    // 1. ¸üĞÂËùÓĞÏà¹ØÏîÄ¿
+    // 1. æ›´æ–°æ‰€æœ‰ç›¸å…³é¡¹ç›®
     for (auto& item : m_items) {
         if (item.category() == oldName) {
             item.setCategory(newName);
         }
     }
-    // 2. ¸üĞÂ·ÖÀàÁĞ±í×ÔÉí
+    // 2. æ›´æ–°åˆ†ç±»åˆ—è¡¨è‡ªèº«
     for (int i = 0; i < m_categories.count(); ++i) {
         if (m_categories[i] == oldName) {
             m_categories[i] = newName;
@@ -287,7 +287,7 @@ void AnniversaryService::addMomentToItem(const QUuid& anniversaryId, const Momen
 {
     if (auto* item = findItemById(anniversaryId)) {
         item->addMoment(moment);
-        emit itemsChanged(); // ·¢ÉäĞÅºÅÒÔ¹©UIË¢ĞÂ
+        emit itemsChanged(); // å‘å°„ä¿¡å·ä»¥ä¾›UIåˆ·æ–°
         saveData();
     }
 }
@@ -315,13 +315,15 @@ void AnniversaryService::saveDataInBackground(const QList<AnniversaryItem> lists
 
 void AnniversaryService::updateMoment(const QUuid& anniversaryId, const Moment& updatedMoment)
 {
+    // findItemById è¿”å›çš„æ˜¯ä¸€ä¸ªéconstæŒ‡é’ˆï¼Œå› æ­¤å¯ä»¥ä¿®æ”¹
     if (auto* item = findItemById(anniversaryId)) {
-        // ±éÀúÕÒµ½¶ÔÓ¦µÄ moment ²¢Ìæ»»Ëü
+        // item->moments() ç°åœ¨è°ƒç”¨çš„æ˜¯éconstç‰ˆæœ¬ï¼Œå…è®¸ä¿®æ”¹
         for (auto& moment : item->moments()) {
             if (moment.id() == updatedMoment.id()) {
-                moment = updatedMoment;
-                emit itemsChanged(); // ·¢ÉäĞÅºÅ£¬ÈÃUIÖªµÀÊı¾İ±äÁË
+                moment = updatedMoment; // ç°åœ¨è¿™ä¸ªèµ‹å€¼æ“ä½œæ˜¯æœ‰æ•ˆçš„
+                emit itemsChanged();
                 saveData();
+                qDebug() << "Service: Moment" << moment.id() << "successfully updated.";
                 return;
             }
         }
