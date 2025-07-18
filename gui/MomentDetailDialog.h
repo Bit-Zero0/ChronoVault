@@ -36,8 +36,7 @@ protected:
 private slots:
     void showNextImage();
     void showPreviousImage();
-    //void onTextChanged();
-    //void performAutoSave();
+    void onTextChanged();
     void switchToPreviewMode();
     void switchToEditMode(); // 【新增】
 
@@ -59,6 +58,6 @@ private:
     ClickableTextBrowser* m_textBrowser;
 
     // 定时器
-    //QPointer<QTimer> m_autoSaveTimer;
+
     QPointer<QTimer> m_switchToPreviewTimer;
 };

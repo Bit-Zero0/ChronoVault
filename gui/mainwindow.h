@@ -84,6 +84,9 @@ private slots:
     void onAnniversaryMomentUpdated(const QUuid& anniversaryId, const Moment& moment);
     void safeRefreshAnniversaryDetail(const QUuid& anniversaryId);
 
+    void onMomentDeleteRequested(const QUuid& anniversaryId, const QUuid& momentId);
+
+
 
 private:
     void setupUi();

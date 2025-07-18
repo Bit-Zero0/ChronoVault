@@ -3,11 +3,16 @@
 #include <QLabel>
 #include <QPixmap>
 #include <QMouseEvent>
+#include <QToolButton>
+#include <QEnterEvent>
 
 MomentCardWidget::MomentCardWidget(const Moment& moment, QWidget *parent)
     : QFrame(parent), m_moment(moment)
 {
     setupUi(moment);
+
+    connect(m_deleteButton, &QToolButton::clicked, this, &MomentCardWidget::onDeleteButtonClicked);
+
 }
 
 MomentCardWidget::~MomentCardWidget()
@@ -47,6 +52,15 @@ void MomentCardWidget::setupUi(const Moment& moment) {
     m_textLabel = new QLabel(moment.text());
     m_textLabel->setStyleSheet("font-size: 12px;");
     mainLayout->addWidget(m_textLabel, 1);
+
+    // 【新增】创建悬浮的删除按钮
+    m_deleteButton = new QToolButton(this); // **父对象是 this (MomentCardWidget)**
+    m_deleteButton->setText("✕");
+    m_deleteButton->setCursor(Qt::PointingHandCursor);
+    m_deleteButton->setStyleSheet("QToolButton { background-color: rgba(0, 0, 0, 0.5); color: white; border-radius: 8px; padding: 2px; font-weight: bold; } QToolButton:hover { background-color: #ff3d71; }");
+    m_deleteButton->setFixedSize(16, 16);
+    m_deleteButton->move(this->width() - m_deleteButton->width() - 5, 5); // **手动定位到右上角**
+    m_deleteButton->hide(); // 默认隐藏
 }
 
 void MomentCardWidget::mouseReleaseEvent(QMouseEvent *event)
@@ -55,6 +69,23 @@ void MomentCardWidget::mouseReleaseEvent(QMouseEvent *event)
         emit clicked(m_moment);
     }
     QFrame::mouseReleaseEvent(event);
+}
+
+void MomentCardWidget::enterEvent(QEnterEvent* event)
+{
+    m_deleteButton->show();
+    QFrame::enterEvent(event);
+}
+
+void MomentCardWidget::leaveEvent(QEvent* event)
+{
+    m_deleteButton->hide();
+    QFrame::leaveEvent(event);
+}
+
+void MomentCardWidget::onDeleteButtonClicked()
+{
+    emit deleteRequested(m_moment.id(), m_moment.text());
 }
 
 const Moment& MomentCardWidget::moment() const

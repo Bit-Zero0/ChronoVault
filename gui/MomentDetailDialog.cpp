@@ -19,15 +19,14 @@ MomentDetailDialog::MomentDetailDialog(const Moment& moment, QWidget *parent)
 {
     setupUi(moment);
 
+    m_switchToPreviewTimer = new QTimer(this);
+    m_switchToPreviewTimer->setInterval(3000); // 设置延时为 3000 毫秒 (3秒)
+    m_switchToPreviewTimer->setSingleShot(true); // 确保它只触发一次
+    connect(m_switchToPreviewTimer, &QTimer::timeout, this, &MomentDetailDialog::switchToPreviewMode);
 
+    // --- 【新增】连接文本变化的信号到我们的新槽函数 ---
+    connect(m_textEdit, &QTextEdit::textChanged, this, &MomentDetailDialog::onTextChanged);
 
-    // m_switchToPreviewTimer = new QTimer(this);
-    // m_switchToPreviewTimer->setInterval(3000); // 停止输入3秒后切换到预览
-    // m_switchToPreviewTimer->setSingleShot(true);
-    // connect(m_switchToPreviewTimer, &QTimer::timeout, this, &MomentDetailDialog::switchToPreviewMode);
-
-    // // 连接文本变化的信号
-    // connect(m_textEdit, &QTextEdit::textChanged, this, &MomentDetailDialog::onTextChanged);
 }
 
 MomentDetailDialog::~MomentDetailDialog() = default;
@@ -158,15 +157,14 @@ void MomentDetailDialog::updateImageCounter() {
     m_imageCounterLabel->setText(QString("%1 / %2").arg(current).arg(total));
 }
 
-// 当文本框内容改变时，启动(或重置)自动保存定时器
-// void MomentDetailDialog::onTextChanged()
-// {
-//     m_isDirty = true;
-//     // 重启两个定时器
-
-//     if(m_switchToPreviewTimer) m_switchToPreviewTimer->start();
-// }
-
+// 【新增】实现 onTextChanged 槽函数
+void MomentDetailDialog::onTextChanged()
+{
+    // 每当用户输入一个字符，就重新启动（或启动）这个3秒的倒计时
+    if(m_switchToPreviewTimer) {
+        m_switchToPreviewTimer->start();
+    }
+}
 void MomentDetailDialog::switchToEditMode()
 {
     m_textStack->setCurrentWidget(m_textEdit);

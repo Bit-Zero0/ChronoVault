@@ -99,6 +99,8 @@ void AnniversaryDetailView::displayAnniversary(const AnniversaryItem& item)
         for (const Moment& moment : item.moments()) {
             MomentCardWidget* card = new MomentCardWidget(moment, this);
             connect(card, &MomentCardWidget::clicked, this, &AnniversaryDetailView::onMomentCardClicked);
+
+            connect(card, &MomentCardWidget::deleteRequested, this, &AnniversaryDetailView::onMomentDeleteRequested);
             m_momentsLayout->addWidget(card);
         }
         m_momentsLayout->addStretch();
@@ -215,13 +217,16 @@ void AnniversaryDetailView::onMomentCardClicked(const Moment& moment)
         emit momentUpdated(m_currentItem.id(), finalMoment);
     }
 }
-//void MomentDetailDialog::performAutoSave()
-//{
-//    // 1. 更新 Moment 对象的内容
-//    m_currentMoment.setText(m_textBrowser->toMarkdown());
 
-//    // 2. 【核心修正】发射信号时，同时传递 anniversaryId 和 moment 对象
-//    emit momentUpdated(m_anniversaryId, m_currentMoment);
 
-//    qDebug() << "Auto-saved moment:" << m_currentMoment.id();
-//}
+void AnniversaryDetailView::onMomentDeleteRequested(const QUuid& momentId, const QString& momentText)
+{
+    auto reply = QMessageBox::question(this, tr("确认删除"),
+                                       tr("您确定要删除这个瞬间吗？\n\n\"%1\"").arg(momentText),
+                                       QMessageBox::Yes | QMessageBox::Cancel);
+
+    if (reply == QMessageBox::Yes) {
+        // 将 anniversaryId 和 momentId 一起发射出去
+        emit momentDeleteRequested(m_currentItem.id(), momentId);
+    }
+}

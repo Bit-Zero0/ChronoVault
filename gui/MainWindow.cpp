@@ -194,6 +194,9 @@ void MainWindow::setupConnections() {
     connect(m_anniversaryDetailView, &AnniversaryDetailView::momentUpdated, this, &MainWindow::onAnniversaryMomentUpdated);
     connect(m_taskDetailWidget, &TaskDetailWidget::reminderChanged, this, &MainWindow::handleReminderChange);
 
+    connect(m_anniversaryDetailView, &AnniversaryDetailView::momentDeleteRequested, this, &MainWindow::onMomentDeleteRequested);
+
+
 
 }
 
@@ -643,9 +646,10 @@ void MainWindow::refreshAnniversaryView() {
 
             m_anniversaryItemsWidget->setItemWidget(listItem, itemWidget);
 
-            connect(itemWidget, &AnniversaryItemWidget::itemDeleted, this, &MainWindow::onAnniversaryItemDeleted);
+            connect(itemWidget, &AnniversaryItemWidget::deleteRequested, this, &MainWindow::onAnniversaryItemDeleted);
             connect(itemWidget, &AnniversaryItemWidget::addToTodoRequested, this, &MainWindow::onAddToTodoRequested);
             connect(itemWidget, &AnniversaryItemWidget::addMomentRequested, this, &MainWindow::onAddMomentRequested);
+
         }
     }
     m_anniversaryItemsWidget->setUpdatesEnabled(true);
@@ -902,5 +906,17 @@ void MainWindow::safeRefreshAnniversaryDetail(const QUuid& anniversaryId)
             qDebug() << "Safely refreshing AnniversaryDetailView for item:" << anniversaryId;
             m_anniversaryDetailView->displayAnniversary(*updatedItem);
         }
+    }
+}
+
+
+void MainWindow::onMomentDeleteRequested(const QUuid& anniversaryId, const QUuid& momentId)
+{
+    m_anniversaryService->deleteMoment(anniversaryId, momentId);
+
+    // 【重要】在服务层发出 itemsChanged 信号后，UI会自动刷新概览页，
+    // 但详情页需要我们手动刷新，以确保数据同步
+    if (const auto* updatedItem = m_anniversaryService->findItemById(anniversaryId)) {
+        m_anniversaryDetailView->displayAnniversary(*updatedItem);
     }
 }

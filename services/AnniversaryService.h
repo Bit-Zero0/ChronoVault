@@ -33,6 +33,7 @@ public:
     void addMomentToItem(const QUuid& anniversaryId, const Moment& moment);
 
     void updateMoment(const QUuid& anniversaryId, const Moment& updatedMoment);
+    void deleteMoment(const QUuid& anniversaryId, const QUuid& momentId);
 
 signals:
     // 当纪念日列表发生变化时，发射此信号通知UI刷新

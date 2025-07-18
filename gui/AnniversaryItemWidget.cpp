@@ -5,6 +5,9 @@
 #include <QToolButton>
 #include <QTimer>
 #include <QEnterEvent>
+#include <QMenu>
+#include <QMessageBox>
+#include <QContextMenuEvent>
 
 AnniversaryItemWidget::AnniversaryItemWidget(const AnniversaryItem& item, QWidget *parent)
     : QWidget(parent), m_item(item)
@@ -21,7 +24,8 @@ AnniversaryItemWidget::AnniversaryItemWidget(const AnniversaryItem& item, QWidge
     }
 
     // 其他 connect 语句保持不变
-    connect(m_deleteButton, &QToolButton::clicked, this, &AnniversaryItemWidget::onDeleteClicked);
+    //connect(m_deleteButton, &QToolButton::clicked, this, &AnniversaryItemWidget::onDeleteClicked);
+    connect(m_deleteButton, &QToolButton::clicked, this, &AnniversaryItemWidget::requestDelete);
     connect(m_addToTodoButton, &QToolButton::clicked, this, &AnniversaryItemWidget::onAddToTodoClicked);
     connect(m_addMomentButton, &QToolButton::clicked, this, &AnniversaryItemWidget::onAddMomentClicked);
 }
@@ -80,6 +84,13 @@ void AnniversaryItemWidget::setupUi() {
     mainLayout->addStretch();
     mainLayout->addWidget(m_countdownLabel, 0, Qt::AlignRight);
     mainLayout->addWidget(m_deleteButton, 0, Qt::AlignTop);
+
+
+    // 【新增】使用一个垂直布局来把 "x" 按钮放在右上角
+    QVBoxLayout* topRightLayout = new QVBoxLayout();
+    topRightLayout->addWidget(m_deleteButton, 0, Qt::AlignTop | Qt::AlignRight);
+    topRightLayout->addStretch();
+    mainLayout->addLayout(topRightLayout);
 }
 
 void AnniversaryItemWidget::onAddToTodoClicked()
@@ -153,4 +164,32 @@ void AnniversaryItemWidget::onAddMomentClicked()
 const AnniversaryItem& AnniversaryItemWidget::item() const
 {
     return m_item;
+}
+
+// void AnniversaryItemWidget::contextMenuEvent(QContextMenuEvent *event)
+// {
+//     QMenu contextMenu(this);
+//     // 添加一个“删除”动作，并将其 triggered 信号连接到我们的删除槽
+//     QAction *deleteAction = contextMenu.addAction(tr("删除此项"));
+//     connect(deleteAction, &QAction::triggered, this, &AnniversaryItemWidget::requestDelete);
+
+//     // 在鼠标光标的位置显示菜单
+//     contextMenu.exec(event->globalPos());
+// }
+
+
+// 【新增】统一的删除请求处理函数
+void AnniversaryItemWidget::requestDelete()
+{
+    // 弹出确认对话框
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, tr("确认删除"),
+                                  tr("您确定要删除“%1”吗？\n此操作不可撤销。").arg(m_item.title()),
+                                  QMessageBox::Yes | QMessageBox::Cancel);
+
+    // 如果用户点击了“是”，则发射信号
+    if (reply == QMessageBox::Yes) {
+        // 发射信号，将ID和标题传递给主窗口
+        emit deleteRequested(m_item.id(), m_item.title());
+    }
 }

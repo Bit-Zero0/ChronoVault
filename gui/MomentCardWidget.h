@@ -5,6 +5,7 @@
 
 QT_BEGIN_NAMESPACE
 class QLabel;
+class QToolButton;
 QT_END_NAMESPACE
 
 class MomentCardWidget : public QFrame
@@ -20,9 +21,16 @@ public:
 
 signals:
     void clicked(const Moment& moment);
+    void deleteRequested(const QUuid& momentId, const QString& momentText);
 
 protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
+    void leaveEvent(QEvent* event) override;
+    void enterEvent(QEnterEvent* event) override;
+
+private slots:
+    // 删除按钮的槽函数4
+    void onDeleteButtonClicked();
 
 private:
     void setupUi(const Moment& moment);
@@ -30,4 +38,5 @@ private:
     QLabel* m_imageLabel;
     QLabel* m_timestampLabel;
     QLabel* m_textLabel;
+    QToolButton* m_deleteButton;
 };

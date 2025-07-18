@@ -221,25 +221,7 @@ void AnniversaryService::updateTargetDateTime(const QUuid& id, const QDateTime& 
     }
 }
 
-//void AnniversaryService::removeCategory(const QString& categoryName)
-//{
-//    if (categoryName.isEmpty() || categoryName == tr("所有项目")) {
-//        return; // 不允许删除“所有项目”这个虚拟分类
-//    }
 
-//    bool changed = false;
-//    for (auto& item : m_items) {
-//        if (item.category() == categoryName) {
-//            item.setCategory(""); // 将分类清空
-//            changed = true;
-//        }
-//    }
-
-//    if (changed) {
-//        emit itemsChanged(); // 发射信号，触发UI刷新
-//        saveData();
-//    }
-//}
 
 
 // 删除分类的逻辑
@@ -326,6 +308,26 @@ void AnniversaryService::updateMoment(const QUuid& anniversaryId, const Moment& 
                 qDebug() << "Service: Moment" << moment.id() << "successfully updated.";
                 return;
             }
+        }
+    }
+}
+
+void AnniversaryService::deleteMoment(const QUuid& anniversaryId, const QUuid& momentId)
+{
+    if (auto* item = findItemById(anniversaryId)) {
+        // 使用 C++ 的 remove_if 来查找并删除匹配ID的 Moment
+        int initialCount = item->moments().count();
+        item->moments().removeIf([&](const Moment& moment){
+            return moment.id() == momentId;
+        });
+
+        // 如果真的删除了一个元素
+        if (item->moments().count() < initialCount) {
+            qDebug() << "Service: Moment" << momentId << "successfully deleted from item" << anniversaryId;
+            // 发射信号，通知UI刷新
+            emit itemsChanged();
+            // 保存更改
+            saveData();
         }
     }
 }
