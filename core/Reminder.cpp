@@ -25,6 +25,7 @@ QJsonObject Reminder::toJson() const {
     json["nextReminderTime"] = m_nextReminderTime.toString(Qt::ISODate);
     json["intervalType"] = static_cast<int>(m_intervalType);
     json["intervalValue"] = m_intervalValue;
+     json["soundPath"] = m_soundPath;
     return json;
 }
 
@@ -34,5 +35,12 @@ Reminder Reminder::fromJson(const QJsonObject& json) {
     r.m_nextReminderTime = QDateTime::fromString(json["nextReminderTime"].toString(), Qt::ISODate);
     r.m_intervalType = static_cast<ReminderIntervalType>(json["intervalType"].toInt());
     r.m_intervalValue = json["intervalValue"].toInt();
+    if (json.contains("soundPath") && !json.value("soundPath").toString().isEmpty()) {
+        // 如果 JSON 对象中包含 "soundPath" 键，并且它的值不是空字符串
+        r.m_soundPath = json.value("soundPath").toString();
+    } else {
+        // 否则，使用我们预设的默认值
+        r.m_soundPath = "default";
+    }
     return r;
 }

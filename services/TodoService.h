@@ -2,6 +2,7 @@
 #include <QObject>
 #include <QList>
 #include <QtConcurrent>
+#include <QSoundEffect>
 
 #include "core/TodoList.h"
 
@@ -80,4 +81,5 @@ private:
     QTimer* m_reminderTimer; // 定时器成员
     QSystemTrayIcon* m_trayIcon; // 新增托盘图标指针
     QSet<QUuid> m_activeNotifications;// 激活锁，用于记录正在显示的通知
+    QSoundEffect* m_soundPlayer;
 };

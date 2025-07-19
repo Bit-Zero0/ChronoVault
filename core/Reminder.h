@@ -15,7 +15,8 @@ public:
     Reminder()
         : m_isActive(false),
         m_intervalType(ReminderIntervalType::None),
-        m_intervalValue(0) {}
+        m_intervalValue(0),
+        m_soundPath("default"){}
 
     // 【新增】明确定义拷贝赋值运算符
     Reminder& operator=(const Reminder& other) = default;
@@ -32,6 +33,9 @@ public:
     int intervalValue() const { return m_intervalValue; }
     void setIntervalValue(int value) { m_intervalValue = value; }
 
+    QString soundPath() const { return m_soundPath; }
+    void setSoundPath(const QString& path) { m_soundPath = path; }
+
     void calculateNext(); // 将实现移至cpp，保持头文件清洁
 
     QJsonObject toJson() const;
@@ -42,4 +46,5 @@ private:
     QDateTime m_nextReminderTime;
     ReminderIntervalType m_intervalType;
     int m_intervalValue;
+    QString m_soundPath;
 };

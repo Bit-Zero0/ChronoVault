@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # 使用一个清晰、完整的命令找到所有需要的 Qt6 模块
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Concurrent)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Concurrent Multimedia)
 
 # 定义源文件列表
 set(PROJECT_SOURCES
@@ -69,6 +69,7 @@ qt_add_executable(ChronoVault
     gui/ClickableLabel.h gui/ClickableLabel.cpp
     gui/ClickableTextBrowser.h
     gui/NotificationWidget.h gui/NotificationWidget.cpp
+    gui/ReminderDialog.h gui/ReminderDialog.cpp
 
 
 
@@ -86,6 +87,7 @@ target_link_libraries(ChronoVault PRIVATE
     Qt6::Gui
     Qt6::Widgets
     Qt6::Concurrent
+    Qt6::Multimedia
 )
 
 # --- 以下为平台相关的设置 ---

@@ -12,6 +12,8 @@
 #include <QDebug>
 #include <QApplication>
 #include <QScreen>
+#include <QSoundEffect>
+
 
 TodoService* TodoService::instance() {
     static TodoService service;
@@ -36,6 +38,7 @@ TodoService::TodoService(QObject *parent) : QObject(parent) {
     m_reminderTimer = new QTimer(this);
     connect(m_reminderTimer, &QTimer::timeout, this, &TodoService::checkReminders);
     m_reminderTimer->start(100);
+    m_soundPlayer = new QSoundEffect(this);
 }
 
 TodoService::~TodoService() {
@@ -301,6 +304,11 @@ void TodoService::checkReminders() {
                 }
                 m_activeNotifications.insert(task.id());
                 qDebug() << "Lock acquired for task:" << task.id();
+
+                if (!reminder.soundPath().isEmpty() && reminder.soundPath() != "none") {
+                    m_soundPlayer->setSource(QUrl(reminder.soundPath()));
+                    m_soundPlayer->play();
+                }
 
                 auto* notification = new NotificationWidget(task.id(), "ChronoVault 待办提醒", task.title());
 
