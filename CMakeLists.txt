@@ -68,6 +68,7 @@ qt_add_executable(ChronoVault
     gui/ImageViewerDialog.h gui/ImageViewerDialog.cpp
     gui/ClickableLabel.h gui/ClickableLabel.cpp
     gui/ClickableTextBrowser.h
+    gui/NotificationWidget.h gui/NotificationWidget.cpp
 
 
 

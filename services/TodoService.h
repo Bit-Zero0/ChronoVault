@@ -50,6 +50,9 @@ signals:
 
 public slots:
     void checkReminders();
+    void onSnoozeRequested(const QUuid& taskId, int minutes);
+    void onDismissRequested(const QUuid& taskId);
+    void onNotificationClosed(const QUuid& taskId);
 
 private:
     explicit TodoService(QObject* parent = nullptr);
@@ -74,6 +77,7 @@ private:
 
     void loadInitialData(); // 用于加载一些测试数据
 
-    QTimer* m_reminderTimer; // <-- 新增定时器成员
-    QSystemTrayIcon* m_trayIcon; // <-- 新增托盘图标指针
+    QTimer* m_reminderTimer; // 定时器成员
+    QSystemTrayIcon* m_trayIcon; // 新增托盘图标指针
+    QSet<QUuid> m_activeNotifications;// 激活锁，用于记录正在显示的通知
 };

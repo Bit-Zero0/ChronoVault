@@ -1,4 +1,5 @@
 #include "services/TodoService.h"
+#include "gui/NotificationWidget.h"
 #include <QStandardPaths>
 #include <QDir>
 #include <QFile>
@@ -9,6 +10,8 @@
 #include <QDateTime>
 #include <QStringLiteral>
 #include <QDebug>
+#include <QApplication>
+#include <QScreen>
 
 TodoService* TodoService::instance() {
     static TodoService service;
@@ -27,6 +30,7 @@ TodoService::TodoService(QObject *parent) : QObject(parent) {
     m_savePath = dataDir + "/data.json";
     m_trayIcon = nullptr;
 
+    m_activeNotifications = QSet<QUuid>();
     loadData();
 
     m_reminderTimer = new QTimer(this);
@@ -277,70 +281,57 @@ void TodoService::setTrayIcon(QSystemTrayIcon* trayIcon) {
 
 
 
-void TodoService::checkReminders() {
-    if (!m_trayIcon) return;
+// services/TodoService.cpp
 
-    QDateTime now = QDateTime::currentDateTime();
-    bool dataChanged = false;
+// services/TodoService.cpp
+
+void TodoService::checkReminders() {
+    if (!m_trayIcon) return; // 安全检查
 
     for (auto& list : m_lists) {
         for (auto& task : list.items) {
-            Reminder reminder = task.reminder();
+            // 只读取 reminder 数据，绝不修改
+            const Reminder& reminder = task.reminder();
 
-            // 检查条件：提醒是激活的、时间已到、任务未完成
-            if (reminder.isActive() && reminder.nextReminderTime() <= now && !task.isCompleted()) {
+            if (reminder.isActive() && reminder.nextReminderTime() <= QDateTime::currentDateTime() && !task.isCompleted()) {
 
-                // 1. 发送一次（且仅一次）“追赶”通知
-                qDebug() << "Todo Reminder Triggered:" << task.title();
-                m_trayIcon->showMessage(
-                    tr("ChronoVault 待办提醒"),
-                    task.title(),
-                    QSystemTrayIcon::Information,
-                    5000
-                    );
-
-                // 2. 如果不是循环提醒，则禁用它
-                if (reminder.intervalType() == ReminderIntervalType::None) {
-                    reminder.setActive(false);
+                // 使用我们之前实现的“激活锁”，防止为同一个提醒创建多个通知
+                if (m_activeNotifications.contains(task.id())) {
+                    continue;
                 }
-                // 3. 【核心逻辑】如果是循环提醒，则智能地重新校准下一次时间
-                else {
-                    QDateTime nextReminderTime = now; // 以当前时间为基准
+                m_activeNotifications.insert(task.id());
+                qDebug() << "Lock acquired for task:" << task.id();
 
-                    // 计算从“现在”开始的、合理的下一次提醒时间
-                    switch (reminder.intervalType()) {
-                    case ReminderIntervalType::Minutes:
-                        nextReminderTime = nextReminderTime.addSecs(reminder.intervalValue() * 60);
-                        break;
-                    case ReminderIntervalType::Hours:
-                        nextReminderTime = nextReminderTime.addSecs(reminder.intervalValue() * 3600);
-                        break;
-                    case ReminderIntervalType::Days:
-                        nextReminderTime = nextReminderTime.addDays(reminder.intervalValue());
-                        break;
-                    default: break;
-                    }
+                auto* notification = new NotificationWidget(task.id(), "ChronoVault 待办提醒", task.title());
 
-                    // 4. 【截止日期检查】
-                    // 只有当任务没有截止日期，或者下一次提醒时间在截止日期之前，才设置下一次提醒
-                    if (!task.dueDate().isValid() || nextReminderTime <= task.dueDate()) {
-                        reminder.setNextReminderTime(nextReminderTime);
-                    } else {
-                        // 如果超过了截止日期，则禁用提醒
-                        qDebug() << "Reminder for task" << task.title() << "has passed its due date. Deactivating.";
-                        reminder.setActive(false);
-                    }
+                // 【重要】连接 closed 信号，用于在通知关闭时“解锁”
+                connect(notification, &NotificationWidget::closed, this, [this, taskId = task.id()]() {
+                    onNotificationClosed(taskId);
+                });
+                connect(notification, &NotificationWidget::snoozeRequested, this, &TodoService::onSnoozeRequested);
+                connect(notification, &NotificationWidget::dismissRequested, this, &TodoService::onDismissRequested);
+
+                // 计算位置并显示
+                QScreen *screen = QGuiApplication::primaryScreen();
+                if (!screen) {
+                    notification->show(); // Fallback
+                    continue;
                 }
 
-                // 5. 将更新后的 reminder 对象设置回任务中
-                task.setReminder(reminder);
-                dataChanged = true;
+                QRect availableGeometry = screen->availableGeometry();
+                QSize notificationSize = notification->sizeHint(); // 获取窗口的理想尺寸
+
+                // 使用理想尺寸来计算右下角的位置
+                notification->move(availableGeometry.right() - notificationSize.width() - 15,
+                                   availableGeometry.bottom() - notificationSize.height() - 15);
+
+                notification->show();
+
+                // 【核心修正】删除下面这两行导致数据竞争的致命代码
+                // task.setReminder(reminder);
+                // saveData();
             }
         }
-    }
-
-    if (dataChanged) {
-        saveData();
     }
 }
 
@@ -376,4 +367,70 @@ QUuid TodoService::findOrCreateInboxList()
     qDebug() << "Inbox not found. Creating a new one.";
     TodoList inbox(inboxName);
     return addList(inbox); // addList 内部会自动保存和发射信号
+}
+
+// 实现“稍后提醒”的逻辑
+void TodoService::onSnoozeRequested(const QUuid& taskId, int minutes)
+{
+    qDebug() << "Snooze requested for task:" << taskId << "for" << minutes << "minutes.";
+    for (auto& list : m_lists) {
+        for (auto& task : list.items) {
+            if (task.id() == taskId) {
+                Reminder reminder = task.reminder();
+                // 将提醒时间设置为 N 分钟后
+                reminder.setNextReminderTime(QDateTime::currentDateTime().addSecs(minutes * 60));
+                task.setReminder(reminder);
+                saveData();
+                return;
+            }
+        }
+    }
+}
+
+// 实现“不再提醒”的逻辑
+void TodoService::onDismissRequested(const QUuid& taskId)
+{
+    qDebug() << "Dismiss requested for task:" << taskId;
+    for (auto& list : m_lists) {
+        for (auto& task : list.items) {
+            if (task.id() == taskId) {
+                Reminder reminder = task.reminder();
+                // 将提醒设置为非激活状态
+                reminder.setActive(false);
+                task.setReminder(reminder);
+                saveData();
+                return;
+            }
+        }
+    }
+}
+
+void TodoService::onNotificationClosed(const QUuid& taskId)
+{
+    // 1. 首先，立即释放锁，这是最重要的
+    m_activeNotifications.remove(taskId);
+    qDebug() << "Lock released for task:" << taskId;
+
+    // 2. 查找对应的任务，这是我们新增的核心逻辑
+    for (auto& list : m_lists) {
+        for (auto& task : list.items) {
+            if (task.id() == taskId) {
+                Reminder reminder = task.reminder();
+
+                // 3. 检查这个提醒是否仍然处于“激活”状态。
+                // 如果用户点击了“不再提醒”，onDismissRequested 会把它设为 false。
+                // 如果用户点击了“稍后提醒”，onSnoozeRequested 会更新它的时间。
+                // 只有当用户什么都没做，它才会保持原样。
+                if (reminder.isActive() && reminder.nextReminderTime() <= QDateTime::currentDateTime()) {
+                    qDebug() << "Notification for task" << taskId << "closed without action. Snoozing for default 5 minutes.";
+
+                    // 4. 【默认行为】将提醒设置为5分钟后再次触发
+                    reminder.setNextReminderTime(QDateTime::currentDateTime().addSecs(5 * 60));
+                    task.setReminder(reminder);
+                    saveData();
+                }
+                return; // 找到任务并处理完毕，即可退出
+            }
+        }
+    }
 }
