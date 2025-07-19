@@ -78,28 +78,29 @@ void AnniversaryService::checkReminders() {
     bool dataChanged = false;
 
     for (AnniversaryItem& item : m_items) {
-        // 【核心修正】在检查提醒时间前，增加一个额外的判断
-        // 确保只有当事件本身还在未来时，我们才处理它的提醒
-        // 这可以防止在倒计时结束的临界点发生意外的重复触发
-        if (item.targetDateTime() > now && item.reminderDateTime().isValid() && item.reminderDateTime() <= now) {
+        // --- 纪念日提醒逻辑 (无截止日期限制) ---
+        if (item.reminderDateTime().isValid() && item.reminderDateTime() <= now) {
+            // 只有当事件本身还在未来时，才处理它的提醒
+            if (item.targetDateTime() > now) {
+                qDebug() << "Anniversary Reminder Triggered:" << item.title();
+                m_trayIcon->showMessage(
+                    tr("ChronoVault 纪念日提醒"),
+                    item.title(),
+                    QSystemTrayIcon::Information,
+                    5000
+                    );
+            }
 
-            qDebug() << "Anniversary Reminder Triggered:" << item.title();
-            m_trayIcon->showMessage(
-                tr("ChronoVault 纪念日提醒"),
-                item.title(),
-                QSystemTrayIcon::Information,
-                5000
-                );
-
-            // 清除提醒时间，这是防止重复的关键
+            // 【核心修正】不再处理此处的提醒时间，统一交给 calculateNextTargetDateTime
+            // 避免在事件本身过期后，提醒时间仍然被错误地向前滚动
             item.setReminderDateTime(QDateTime());
             dataChanged = true;
         }
 
-        // 检查目标时间是否已过，以便为周期性事件计算下一个日期
-        // (这部分逻辑保持不变)
+        // --- 纪念日自身过期和循环处理逻辑 ---
         if (item.targetDateTime().isValid() && item.targetDateTime() <= now) {
             if (item.recurrence() != AnniversaryRecurrence::None) {
+                // 这个函数现在将负责智能地计算下一次目标时间和提醒时间
                 calculateNextTargetDateTime(item);
                 dataChanged = true;
             }
@@ -111,33 +112,34 @@ void AnniversaryService::checkReminders() {
         saveData();
     }
 }
-
 void AnniversaryService::calculateNextTargetDateTime(AnniversaryItem& item) {
     QDate originalDate = item.originalDate();
-    QDate today = QDate::currentDate();
+    QDateTime now = QDateTime::currentDateTime();
     QDate nextDate;
 
+    // (计算 nextDate 的逻辑保持不变)
     if (item.recurrence() == AnniversaryRecurrence::Yearly) {
-        nextDate = QDate(today.year(), originalDate.month(), originalDate.day());
-        if (nextDate < today) {
+        nextDate = QDate(now.date().year(), originalDate.month(), originalDate.day());
+        if (nextDate <= now.date()) {
             nextDate = nextDate.addYears(1);
         }
-    }
-    else if (item.recurrence() == AnniversaryRecurrence::Monthly) {
-        nextDate = QDate(today.year(), today.month(), originalDate.day());
-        if (nextDate < today) {
+    } else if (item.recurrence() == AnniversaryRecurrence::Monthly) {
+        nextDate = QDate(now.date().year(), now.date().month(), originalDate.day());
+        if (nextDate <= now.date()) {
             nextDate = nextDate.addMonths(1);
         }
-    }
-    else {
-        return; // 非周期性事件，无需计算
+    } else {
+        return;
     }
 
     // 将计算出的下一个日期，与原始时间结合，形成下一个目标QDateTime
-    item.setTargetDateTime(QDateTime(nextDate, item.targetDateTime().time()));
+    QDateTime nextTarget = QDateTime(nextDate, item.targetDateTime().time());
+    item.setTargetDateTime(nextTarget);
 
-    // 在这里，我们还可以根据用户的设置，重新计算下一次的提醒时间
-    // 例如：item.setReminderDateTime(item.targetDateTime().addDays(-3));
+    // 【新增】智能地重新设置下一次的提醒时间
+    // 假设提醒时间是目标时间的前一天
+    item.setReminderDateTime(nextTarget.addDays(-1));
+
     qDebug() << "Calculated next occurrence for" << item.title() << "is" << item.targetDateTime();
 }
 

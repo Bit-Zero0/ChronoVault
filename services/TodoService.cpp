@@ -281,15 +281,16 @@ void TodoService::checkReminders() {
     if (!m_trayIcon) return;
 
     QDateTime now = QDateTime::currentDateTime();
-    bool dataChanged = false; // 标记是否有任务的提醒状态需要保存
+    bool dataChanged = false;
 
     for (auto& list : m_lists) {
         for (auto& task : list.items) {
-            // 获取任务的提醒对象
             Reminder reminder = task.reminder();
 
-            // 检查提醒是否激活，并且时间已到
+            // 检查条件：提醒是激活的、时间已到、任务未完成
             if (reminder.isActive() && reminder.nextReminderTime() <= now && !task.isCompleted()) {
+
+                // 1. 发送一次（且仅一次）“追赶”通知
                 qDebug() << "Todo Reminder Triggered:" << task.title();
                 m_trayIcon->showMessage(
                     tr("ChronoVault 待办提醒"),
@@ -298,18 +299,46 @@ void TodoService::checkReminders() {
                     5000
                     );
 
-                // 【核心升级】让 Reminder 对象自己计算下一次提醒时间
-                // 如果是单次提醒，此函数会自动将其设置为不再激活
-                reminder.calculateNext();
+                // 2. 如果不是循环提醒，则禁用它
+                if (reminder.intervalType() == ReminderIntervalType::None) {
+                    reminder.setActive(false);
+                }
+                // 3. 【核心逻辑】如果是循环提醒，则智能地重新校准下一次时间
+                else {
+                    QDateTime nextReminderTime = now; // 以当前时间为基准
 
-                // 将更新后的 Reminder 对象设置回任务中
+                    // 计算从“现在”开始的、合理的下一次提醒时间
+                    switch (reminder.intervalType()) {
+                    case ReminderIntervalType::Minutes:
+                        nextReminderTime = nextReminderTime.addSecs(reminder.intervalValue() * 60);
+                        break;
+                    case ReminderIntervalType::Hours:
+                        nextReminderTime = nextReminderTime.addSecs(reminder.intervalValue() * 3600);
+                        break;
+                    case ReminderIntervalType::Days:
+                        nextReminderTime = nextReminderTime.addDays(reminder.intervalValue());
+                        break;
+                    default: break;
+                    }
+
+                    // 4. 【截止日期检查】
+                    // 只有当任务没有截止日期，或者下一次提醒时间在截止日期之前，才设置下一次提醒
+                    if (!task.dueDate().isValid() || nextReminderTime <= task.dueDate()) {
+                        reminder.setNextReminderTime(nextReminderTime);
+                    } else {
+                        // 如果超过了截止日期，则禁用提醒
+                        qDebug() << "Reminder for task" << task.title() << "has passed its due date. Deactivating.";
+                        reminder.setActive(false);
+                    }
+                }
+
+                // 5. 将更新后的 reminder 对象设置回任务中
                 task.setReminder(reminder);
                 dataChanged = true;
             }
         }
     }
 
-    // 如果有任何提醒状态被更新，则保存数据
     if (dataChanged) {
         saveData();
     }
