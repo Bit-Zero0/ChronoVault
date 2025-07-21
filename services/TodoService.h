@@ -2,12 +2,13 @@
 #include <QObject>
 #include <QList>
 #include <QtConcurrent>
+#include <QSoundEffect>
 
 #include "core/TodoList.h"
 
 QT_BEGIN_NAMESPACE
-class QTimer; // Ç°ÏòÉùÃ÷ QTimer
-class QSystemTrayIcon; // Ç°ÏòÉùÃ÷ QSystemTrayIcon
+class QTimer; // å‰å‘å£°æ˜ QTimer
+class QSystemTrayIcon; // å‰å‘å£°æ˜ QSystemTrayIcon
 QT_END_NAMESPACE
 
 class TodoService : public QObject {
@@ -15,10 +16,10 @@ class TodoService : public QObject {
 
 
 public:
-    // »ñÈ¡µ¥ÀıÊµÀı
+    // è·å–å•ä¾‹å®ä¾‹
     static TodoService* instance();
 
-    // ½Ó¿Ú
+    // æ¥å£
     const QList<TodoList>& getAllLists() const;
 
     QUuid  addList(const QString& name);
@@ -39,31 +40,36 @@ public:
 
     TodoItem* findTodoById(const QUuid& listId, const QUuid& todoId);
     TodoList* findListById(const QUuid& listId);
+    TodoItem* findTaskById(const QUuid& taskId);
 
     void setTrayIcon(QSystemTrayIcon* trayIcon);
 
 
 signals:
-    // µ±Êı¾İÄ£ĞÍ·¢ÉúÖØ´ó±ä»¯Ê±£¬·¢ÉäÕâĞ©ĞÅºÅ
-    void listsChanged(); // ÁĞ±í±¾Éí£¨Ôö¡¢É¾¡¢¸ÄÃû£©·¢Éú±ä»¯
-    void tasksChanged(const QUuid& listId); // Ä³¸öÁĞ±íÖĞµÄÈÎÎñ·¢Éú±ä»¯
+    // å½“æ•°æ®æ¨¡å‹å‘ç”Ÿé‡å¤§å˜åŒ–æ—¶ï¼Œå‘å°„è¿™äº›ä¿¡å·
+    void listsChanged(); // åˆ—è¡¨æœ¬èº«ï¼ˆå¢ã€åˆ ã€æ”¹åï¼‰å‘ç”Ÿå˜åŒ–
+    void tasksChanged(const QUuid& listId); // æŸä¸ªåˆ—è¡¨ä¸­çš„ä»»åŠ¡å‘ç”Ÿå˜åŒ–
 
 public slots:
     void checkReminders();
+    void onSnoozeRequested(const QUuid& taskId, int minutes);
+    void onDismissRequested(const QUuid& taskId);
+    void onNotificationClosed(const QUuid& taskId);
 
 private:
     explicit TodoService(QObject* parent = nullptr);
     ~TodoService();
 
-    // ½ûÓÃ¿½±´ºÍ¸³Öµ
+    // ç¦ç”¨æ‹·è´å’Œèµ‹å€¼
     TodoService(const TodoService&) = delete;
     TodoService& operator=(const TodoService&) = delete;
 
+    void calculateNextBaseReminder(Reminder& reminder);
 
-    // Êı¾İ´æ´¢
+    // æ•°æ®å­˜å‚¨
     QList<TodoList> m_lists;
 
-//    Ò»¸öÏß³Ì°²È«µÄ¡¢ÓÃÓÚÔÚºóÌ¨±£´æÊı¾İµÄĞÂË½ÓĞº¯Êı
+//    ä¸€ä¸ªçº¿ç¨‹å®‰å…¨çš„ã€ç”¨äºåœ¨åå°ä¿å­˜æ•°æ®çš„æ–°ç§æœ‰å‡½æ•°
     void saveDataInBackground(const QList<TodoList> listsToSave) const;
 
 
@@ -72,8 +78,10 @@ private:
     QString m_savePath;
 
 
-    void loadInitialData(); // ÓÃÓÚ¼ÓÔØÒ»Ğ©²âÊÔÊı¾İ
+    void loadInitialData(); // ç”¨äºåŠ è½½ä¸€äº›æµ‹è¯•æ•°æ®
 
-    QTimer* m_reminderTimer; // <-- ĞÂÔö¶¨Ê±Æ÷³ÉÔ±
-    QSystemTrayIcon* m_trayIcon; // <-- ĞÂÔöÍĞÅÌÍ¼±êÖ¸Õë
+    QTimer* m_reminderTimer; // å®šæ—¶å™¨æˆå‘˜
+    QSystemTrayIcon* m_trayIcon; // æ–°å¢æ‰˜ç›˜å›¾æ ‡æŒ‡é’ˆ
+    QSet<QUuid> m_activeNotifications;// æ¿€æ´»é”ï¼Œç”¨äºè®°å½•æ­£åœ¨æ˜¾ç¤ºçš„é€šçŸ¥
+    QSoundEffect* m_soundPlayer;
 };

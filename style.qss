@@ -1,0 +1,197 @@
+/* * =================================
+ * ChronoVault - Global Style Sheet
+ * Primary Color: #3fc1c9
+ * Base Color: #ffffff
+ * =================================
+ */
+
+/* --- 全局与窗口 --- */
+QMainWindow, QDialog {
+    background-color: #ffffff;
+}
+
+QWidget {
+    font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif;
+    color: #333;
+}
+
+/* --- 左侧垂直导航栏 --- */
+QWidget#moduleSwitcherPanel {
+    background-color: #f7f9fa;
+    border-right: 1px solid #e0e4e7;
+}
+
+QToolButton {
+    border: none;
+    padding: 8px;
+    border-radius: 6px;
+    color: #555;
+}
+
+QToolButton:hover {
+    background-color: #e8f8f9;
+}
+
+/* 导航按钮选中时的样式 */
+QToolButton:checked {
+    background-color: #3fc1c9;
+    color: white;
+}
+
+/* --- 【核心修正】为不同的列表控件定义专属样式 --- */
+
+/* 列表控件的通用样式 (边框, 背景等) */
+QListWidget {
+    border: 1px solid #e0e4e7;
+    border-radius: 6px;
+    padding: 5px;
+    background-color: #ffffff;
+}
+
+/* 1. 左侧列表栏 (Todo 和 Anniversary 分类) 的列表项样式 */
+/* 使用 #TodoListWidget 和 #AnniversaryCategoryWidget 来精确选中它们 */
+QListWidget#TodoListWidget::item,
+QListWidget#AnniversaryCategoryWidget::item {
+    padding: 8px 10px; /* 给予适中的内边距，解决文字裁切问题 */
+    border-radius: 4px;
+    margin: 1px 0;
+}
+
+QListWidget#TodoListWidget QLabel,
+QListWidget#AnniversaryCategoryWidget QLabel {
+    font-size: 13px;
+}
+
+
+QListWidget#TodoListWidget::item:hover,
+QListWidget#AnniversaryCategoryWidget::item:hover {
+    background-color: #f0fcfd;
+}
+
+QListWidget#TodoListWidget::item:selected,
+QListWidget#AnniversaryCategoryWidget::item:selected {
+    background-color: #d0f0f2;
+    color: #005662;
+    font-weight: bold;
+}
+
+
+/* 2. 右侧内容列表 (任务项和纪念日卡片) 的列表项样式 */
+/* 这里我们不需要额外的边距和背景，因为自定义控件会处理 */
+QListWidget#TaskItemsWidget::item,
+QListWidget#AnniversaryListWidget::item {
+    padding: 0px;
+    margin: 5px 0;
+    border: none;
+    background-color: transparent; /* 背景设为透明 */
+}
+/* 取消选中和悬停效果，因为交互在卡片/列表项控件本身 */
+QListWidget#TaskItemsWidget::item:selected,
+QListWidget#AnniversaryListWidget::item:selected,
+QListWidget#TaskItemsWidget::item:hover,
+QListWidget#AnniversaryListWidget::item:hover {
+    background-color: transparent;
+}
+
+
+/* --- 卡片式控件 --- */
+/* AnniversaryItemWidget 现在可以自适应高度，不再需要 min-height */
+AnniversaryItemWidget {
+    border: 1px solid #e8ecef;
+    border-radius: 8px;
+    background-color: white;
+}
+AnniversaryItemWidget:hover {
+    border: 1px solid #3fc1c9;
+}
+
+MomentCardWidget {
+    border: 1px solid #e8ecef;
+    border-radius: 8px;
+    background-color: white;
+}
+MomentCardWidget:hover {
+    border: 1px solid #3fc1c9;
+}
+
+/* --- 输入框 (QLineEdit) --- */
+QLineEdit {
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    padding: 6px 8px;
+    background-color: #fff;
+    font-size: 14px;
+}
+
+QLineEdit:focus {
+    border: 1px solid #3fc1c9;
+}
+
+
+/* --- 按钮 (QPushButton) --- */
+QPushButton {
+    background-color: #3fc1c9;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+QPushButton:hover {
+    background-color: #35a8b0;
+}
+
+QPushButton:pressed {
+    background-color: #2d8f96;
+}
+
+
+/* --- 下拉列表 (QComboBox) --- */
+QComboBox {
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+QComboBox::drop-down {
+    border: none;
+}
+
+QComboBox::down-arrow {
+    image: url(:/icons/icons/down-arrow.svg); /* 确保您有一个向下的箭头图标 */
+    width: 12px;
+    height: 12px;
+}
+
+/* --- 滚动条 --- */
+QScrollBar:vertical {
+    border: none;
+    background: #f1f1f1;
+    width: 8px;
+    margin: 0px 0px 0px 0px;
+}
+QScrollBar::handle:vertical {
+    background: #c1c1c1;
+    min-height: 20px;
+    border-radius: 4px;
+}
+QScrollBar::handle:vertical:hover {
+    background: #a8a8a8;
+}
+
+QScrollBar:horizontal {
+    border: none;
+    background: #f1f1f1;
+    height: 8px;
+    margin: 0px 0px 0px 0px;
+}
+QScrollBar::handle:horizontal {
+    background: #c1c1c1;
+    min-width: 20px;
+    border-radius: 4px;
+}
+QScrollBar::handle:horizontal:hover {
+    background: #a8a8a8;
+}

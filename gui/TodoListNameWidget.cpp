@@ -9,14 +9,15 @@ TodoListNameWidget::TodoListNameWidget(QUuid id, const QString& name, QWidget* p
     : QWidget(parent), m_id(id)
 {
     QHBoxLayout* layout = new QHBoxLayout(this);
-    layout->setContentsMargins(0, 0, 0, 0);
+    // 【核心修正】为布局添加垂直边距，为文字提供足够的呼吸空间
+    layout->setContentsMargins(5, 6, 5, 6);
 
     m_stackedWidget = new QStackedWidget();
     layout->addWidget(m_stackedWidget);
 
     m_nameLabel = new QLabel(name);
     m_nameEdit = new QLineEdit(name);
-    m_nameEdit->setStyleSheet("background-color: white; border: 1px solid #0078d4;");
+    m_nameEdit->setStyleSheet("background-color: white; border: 1px solid #3fc1c9;");
 
     m_stackedWidget->addWidget(m_nameLabel);
     m_stackedWidget->addWidget(m_nameEdit);

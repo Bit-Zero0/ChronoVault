@@ -2,6 +2,11 @@
 
 #include <QMainWindow>
 #include "core/Moment.h"
+#include "core/TodoItem.h"
+#include "core/Reminder.h"
+#include "core/SubTask.h"
+
+
 // Forward declarations
 class TodoService;
 class AnniversaryService;
@@ -21,6 +26,7 @@ class QDateTime;
 class TodoItem;
 class SubTask;
 class Reminder;
+class QVBoxLayout;
 
 class MainWindow : public QMainWindow
 {
@@ -28,9 +34,11 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget* parent = nullptr);
-    ~MainWindow();
+
 
 private slots:
+    void onModuleButtonClicked(int id); // 用于响应新按钮点击的槽
+
     // Module Switching
     void onModuleChanged(int id);
 
@@ -64,6 +72,7 @@ private slots:
     // Anniversary Module Slots
     void refreshAnniversaryView();
     void refreshAnniversaryCategories();
+
     void onAnniversaryCategoryChanged();
     void showAnniversaryCategoryContextMenu(const QPoint& pos);
     void onAddNewAnniversaryCategory();
@@ -77,6 +86,12 @@ private slots:
     void onAddMomentRequested(const QUuid& anniversaryId);
     void handleReminderChange(const QUuid& taskId, const Reminder& reminder);
     void onAnniversaryMomentUpdated(const QUuid& anniversaryId, const Moment& moment);
+    void safeRefreshAnniversaryDetail(const QUuid& anniversaryId);
+
+    void onMomentDeleteRequested(const QUuid& anniversaryId, const QUuid& momentId);
+    void onAnniversaryDataChanged(); // 【新增】用于响应数据变化的槽
+    void onMomentAdded(const QUuid& anniversaryId, const Moment& newMoment);
+
 
 
 private:
@@ -93,7 +108,12 @@ private:
     // UI Widgets
     QSplitter* m_rootSplitter;
     QWidget* m_leftPanel;
-    QButtonGroup* m_moduleButtonGroup;
+    //QButtonGroup* m_moduleButtonGroup;
+
+    QVBoxLayout* m_moduleSwitcherLayout; // 【新增】用于放置垂直模块按钮的布局
+    QToolButton* m_todoModuleButton;     // 【新增】独立的待办模块按钮
+    QToolButton* m_anniversaryModuleButton;
+
     QStackedWidget* m_leftContentStack;
     QWidget* m_todoListPanel;
     QListWidget* m_listSelectionWidget;

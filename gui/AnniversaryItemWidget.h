@@ -22,11 +22,14 @@ signals:
     void itemDeleted(const QUuid& id);
     void addToTodoRequested(const QUuid& id);
     void addMomentRequested(const QUuid& id);
+    void deleteRequested(const QUuid& id, const QString& title);
 
 protected:
     // 实现悬停时显示/隐藏删除按钮
     void enterEvent(QEnterEvent *event) override;
     void leaveEvent(QEvent *event) override;
+
+
 
 private slots:
     // 每秒更新一次倒计时显示
@@ -34,6 +37,7 @@ private slots:
     void onDeleteClicked();
     void onAddToTodoClicked();
     void onAddMomentClicked();
+    void requestDelete();
 
 
 private:

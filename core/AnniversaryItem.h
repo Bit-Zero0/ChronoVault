@@ -10,12 +10,12 @@
 #include "core/Moment.h"
 
 
-// ... Ã¶¾Ù¶¨Òå±£³Ö²»±ä ...
+// ... æšä¸¾å®šä¹‰ä¿æŒä¸å˜ ...
 enum class AnniversaryEventType { Countdown, Anniversary };
 enum class AnniversaryRecurrence { None, Yearly, Monthly };
 
 //=============================================================================
-//  ¡¾ĞŞÕıºóµÄ AnniversaryItem Àà¡¿
+//  ã€ä¿®æ­£åçš„ AnniversaryItem ç±»ã€‘
 //=============================================================================
 class AnniversaryItem {
 public:
@@ -32,7 +32,7 @@ public:
     AnniversaryItem& operator=(AnniversaryItem&& other) noexcept = default;
 
 
-    // --- ¡¾ºËĞÄĞŞÕı¡¿²¹È«ËùÓĞµÄ Getter ºÍ Setter º¯Êı ---
+    // --- ã€æ ¸å¿ƒä¿®æ­£ã€‘è¡¥å…¨æ‰€æœ‰çš„ Getter å’Œ Setter å‡½æ•° ---
     QUuid id() const { return m_id; }
     QString title() const { return m_title; }
     void setTitle(const QString& title) { m_title = title; }
@@ -56,7 +56,7 @@ public:
     void setAddedToTodo(bool added) { m_isAddedToTodo = added; }
 
     const QList<Moment>& moments() const { return m_moments; }
-    QList<Moment>& moments() { return m_moments; }           // ÓÃÓÚĞŞ¸Ä·ÃÎÊ
+    QList<Moment>& moments() { return m_moments; }           // ç”¨äºä¿®æ”¹è®¿é—®
     void addMoment(const Moment& moment) { m_moments.append(moment); }
     // --- -------------------------------------------- ---
 
@@ -64,7 +64,7 @@ public:
     void setCategory(const QString& category) { m_category = category; }
 
 
-    // --- Êı¾İ³Ö¾Ã»¯º¯Êı (ÎªÎ´À´×ö×¼±¸) ---
+    // --- æ•°æ®æŒä¹…åŒ–å‡½æ•° (ä¸ºæœªæ¥åšå‡†å¤‡) ---
     QJsonObject toJson() const {
         QJsonObject json;
         json["id"] = m_id.toString(QUuid::WithoutBraces);
@@ -77,7 +77,7 @@ public:
         json["reminderDateTime"] = m_reminderDateTime.toString(Qt::ISODate);
         json["isAddedToTodo"] = m_isAddedToTodo;
 
-        // ¡¾ĞÂÔö¡¿½« moments ÁĞ±íĞòÁĞ»¯ÎªÒ»¸öJSONÊı×é
+        // ã€æ–°å¢ã€‘å°† moments åˆ—è¡¨åºåˆ—åŒ–ä¸ºä¸€ä¸ªJSONæ•°ç»„
         QJsonArray momentsArray;
         for (const auto& moment : m_moments) {
             momentsArray.append(moment.toJson());
@@ -101,11 +101,11 @@ public:
         item.m_reminderDateTime = QDateTime::fromString(json.value("reminderDateTime").toString(), Qt::ISODate);
         item.m_isAddedToTodo = json.value("isAddedToTodo").toBool();
 
-        // ¡¾ĞÂÔöµÄÂß¼­¡¿
+        // ã€æ–°å¢çš„é€»è¾‘ã€‘
         if (json.contains("moments") && json["moments"].isArray()) {
             QJsonArray momentsArray = json["moments"].toArray();
             for (const auto& momentValue : momentsArray) {
-                // ½«Êı×éÖĞµÄÃ¿Ò»¸öJSON¶ÔÏó¶¼×ª»»»Ø Moment ¶ÔÏó£¬²¢Ìí¼Óµ½ÁĞ±íÖĞ
+                // å°†æ•°ç»„ä¸­çš„æ¯ä¸€ä¸ªJSONå¯¹è±¡éƒ½è½¬æ¢å› Moment å¯¹è±¡ï¼Œå¹¶æ·»åŠ åˆ°åˆ—è¡¨ä¸­
                 item.m_moments.append(Moment::fromJson(momentValue.toObject()));
             }
         }

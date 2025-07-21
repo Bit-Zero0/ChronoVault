@@ -1,8 +1,9 @@
 #pragma once
 
 #include <QDialog>
+#include <QPointer>
 #include "core/Moment.h"
-
+#include "gui/ClickableTextBrowser.h"
 QT_BEGIN_NAMESPACE
 class QLabel;
 class QTextBrowser;
@@ -19,11 +20,14 @@ class MomentDetailDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit MomentDetailDialog(const Moment& moment, const QUuid& anniversaryId, QWidget *parent = nullptr);
+    explicit MomentDetailDialog(const Moment& moment, QWidget *parent = nullptr);
     ~MomentDetailDialog();
 
-signals:
-    void momentUpdated(const QUuid& anniversaryId, const Moment& updatedMoment);
+
+    Moment getMoment() const;
+
+// signals:
+//     void momentUpdated(const QUuid& anniversaryId, const Moment& updatedMoment);
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -33,7 +37,6 @@ private slots:
     void showNextImage();
     void showPreviousImage();
     void onTextChanged();
-    void performAutoSave();
     void switchToPreviewMode();
     void switchToEditMode(); // 【新增】
 
@@ -42,7 +45,7 @@ private:
     void updateImageCounter();
 
     Moment m_currentMoment;
-    QUuid m_anniversaryId;
+    //QUuid m_anniversaryId;
     bool m_isDirty = false;
 
     // UI 控件
@@ -52,9 +55,9 @@ private:
     QToolButton* m_nextButton;
     QStackedWidget* m_textStack;
     QTextEdit* m_textEdit;
-    QTextBrowser* m_textBrowser;
+    ClickableTextBrowser* m_textBrowser;
 
     // 定时器
-    QTimer* m_autoSaveTimer;
-    QTimer* m_switchToPreviewTimer;
+
+    QPointer<QTimer> m_switchToPreviewTimer;
 };

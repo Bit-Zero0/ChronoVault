@@ -73,6 +73,3 @@ CMakeLists.txt.user*
 *.dll
 *.exe
 
-/.kiro/specs/chronovault-core
-/out/build/debug
-/.idea

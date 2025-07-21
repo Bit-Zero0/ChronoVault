@@ -1,6 +1,7 @@
 #include "gui/TaskDetailWidget.h"
 #include "gui/SubTaskItemWidget.h"
 #include "gui/ReminderSettingsDialog.h"
+#include "gui/ReminderDialog.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QCheckBox>
@@ -28,7 +29,7 @@ TaskDetailWidget::TaskDetailWidget(QWidget* parent)
 
     connect(m_titleLineEdit, &QLineEdit::editingFinished, this, &TaskDetailWidget::onTitleEditingFinished);
     //connect(m_notesTextEdit, &QTextEdit::textChanged, this, &TaskDetailWidget::onNotesChanged);
-    m_notesTextEdit->installEventFilter(this);
+    //m_notesTextEdit->installEventFilter(this);
     connect(m_completedCheckBox, &QCheckBox::stateChanged, this, &TaskDetailWidget::onCompletedStateChanged);
     connect(m_deleteButton, &QPushButton::clicked, this, &TaskDetailWidget::onDeleteButtonClicked);
     connect(m_addSubTaskLineEdit, &QLineEdit::returnPressed, this, &TaskDetailWidget::onAddSubTaskLineEditReturnPressed);
@@ -331,27 +332,12 @@ void TaskDetailWidget::onDueDateButtonClicked() {
 }
 
 
-//void TaskDetailWidget::onRemindMeButtonClicked() {
-//    // 这个槽函数现在是为 TodoItem 设置提醒，所以我们不再使用 Anniversary 的对话框
-//    // 而是直接使用我们为 Reminder 设计的对话框
 
-//    ReminderSettingsDialog dialog(m_currentTask.reminder(), this);
-
-//    if (dialog.exec() == QDialog::Accepted) {
-//        // 【注意】这里不再直接修改 m_currentTask
-//        // 而是发射一个信号，让 MainWindow->TodoService 去处理
-//        // 这是为了保持数据流的单向性
-//        // 不过为了简化，我们先直接修改，后续再优化
-//        m_currentTask.setReminder(dialog.getReminder());
-//        emit taskUpdated(m_currentTask); // 发射信号通知 MainWindow 更新
-//    }
-//}
 
 // 【核心修正】点击“提醒我”按钮时，弹出新的提醒设置对话框
 void TaskDetailWidget::onRemindMeButtonClicked() {
-    ReminderSettingsDialog dialog(m_currentTask.reminder(), this);
+    ReminderDialog dialog(m_currentTask.reminder(), this); // 【修改】使用新的对话框
     if (dialog.exec() == QDialog::Accepted) {
-        // 发射新的 reminderChanged 信号
         emit reminderChanged(m_currentTask.id(), dialog.getReminder());
     }
 }

@@ -6,11 +6,15 @@
 #include "gui/TaskDetailWidget.h"
 #include "gui/AddAnniversaryDialog.h"
 #include "gui/TodoListSelectionDialog.h"
-#include "gui/ReminderSettingsDialog.h"
+
 #include "gui/AddMomentDialog.h"
 #include "gui/TodoListItemWidget.h"
 #include "gui/TodoListNameWidget.h"
 #include "gui/CompletedHeaderWidget.h"
+#include "core/SubTask.h"
+#include "gui/ReminderDialog.h"
+
+
 
 #include <QSplitter>
 #include <QVBoxLayout>
@@ -26,6 +30,7 @@
 #include <QMessageBox>
 #include <QMenu>
 #include <QDebug>
+#include <QTimer>
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     m_todoService = TodoService::instance();
     m_anniversaryService = AnniversaryService::instance();
@@ -40,7 +45,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     refreshAnniversaryView();
 }
 
-MainWindow::~MainWindow() {}
+
 
 
 
@@ -48,86 +53,117 @@ MainWindow::~MainWindow() {}
 void MainWindow::setupUi() {
     setWindowTitle(tr("ChronoVault"));
     resize(1080, 720);
-    m_rootSplitter = new QSplitter(Qt::Horizontal, this);
+
+    // 1. 创建一个容纳所有内容的中央Widget和主水平布局
+    QWidget* centralWidget = new QWidget(this);
+    QHBoxLayout* mainLayout = new QHBoxLayout(centralWidget);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setSpacing(0);
+
+    // --- 创建最左侧的垂直模块切换栏 ---
+    QWidget* moduleSwitcherPanel = new QWidget();
+    moduleSwitcherPanel->setObjectName("moduleSwitcherPanel");
+    moduleSwitcherPanel->setStyleSheet("background-color: #f3f3f3; border-right: 1px solid #e0e0e0;");
+    moduleSwitcherPanel->setFixedWidth(60);
+
+    m_moduleSwitcherLayout = new QVBoxLayout(moduleSwitcherPanel);
+    m_moduleSwitcherLayout->setContentsMargins(5, 10, 5, 10);
+    m_moduleSwitcherLayout->setSpacing(10);
+
+    m_todoModuleButton = new QToolButton();
+    m_todoModuleButton->setIcon(QIcon(":/icons/icons/TODO.svg")); // 设置“待办”图标
+    m_todoModuleButton->setToolTip(tr("待办")); // 鼠标悬停时显示文字提示
+    m_todoModuleButton->setCheckable(true);
+    m_todoModuleButton->setChecked(true);
+    m_todoModuleButton->setIconSize(QSize(32, 32)); // 设置一个合适的图标尺寸
+    m_todoModuleButton->setStyleSheet("QToolButton { border: none; padding: 5px; } QToolButton:checked { background-color: #cce5ff; border-radius: 4px; }");
+
+    m_anniversaryModuleButton = new QToolButton();
+    m_anniversaryModuleButton->setIcon(QIcon(":/icons/icons/anniversary.svg")); // 设置“纪念日”图标
+    m_anniversaryModuleButton->setToolTip(tr("纪念日"));
+    m_anniversaryModuleButton->setCheckable(true);
+    m_anniversaryModuleButton->setIconSize(QSize(32, 32));
+    m_anniversaryModuleButton->setStyleSheet("QToolButton { border: none; padding: 5px; } QToolButton:checked { background-color: #cce5ff; border-radius: 4px; }");
+
+    m_settingsButton = new QToolButton();
+    m_settingsButton->setIcon(QIcon(":/icons/icons/set.svg")); // 设置“设置”图标
+    m_settingsButton->setToolTip(tr("设置与账户"));
+    m_settingsButton->setIconSize(QSize(32, 32));
+    m_settingsButton->setStyleSheet("QToolButton { border: none; padding: 5px; }");
+
+    m_moduleSwitcherLayout->addWidget(m_todoModuleButton);
+    m_moduleSwitcherLayout->addWidget(m_anniversaryModuleButton);
+    m_moduleSwitcherLayout->addStretch();
+    m_moduleSwitcherLayout->addWidget(m_settingsButton);
+
+    // --- 【核心修正】在这里创建所有被 Splitter 使用的控件 ---
+
+    // 2a. 创建“第二列” (旧的 m_leftPanel) 的所有内容
     m_leftPanel = new QWidget();
     QVBoxLayout* leftPanelLayout = new QVBoxLayout(m_leftPanel);
     leftPanelLayout->setContentsMargins(0, 0, 0, 5);
     leftPanelLayout->setSpacing(0);
-    QWidget* moduleSwitcherWidget = new QWidget();
-    moduleSwitcherWidget->setStyleSheet("background-color: #f3f3f3; border-bottom: 1px solid #e0e0e0;");
-    QHBoxLayout* moduleSwitcherLayout = new QHBoxLayout(moduleSwitcherWidget);
-    moduleSwitcherLayout->setContentsMargins(5, 5, 5, 5);
-    m_moduleButtonGroup = new QButtonGroup(this);
-    m_moduleButtonGroup->setExclusive(true);
-    QToolButton* todoButton = new QToolButton();
-    todoButton->setText(tr("待办"));
-    todoButton->setCheckable(true);
-    todoButton->setChecked(true);
-    todoButton->setStyleSheet("QToolButton { border: 1px solid #ccc; padding: 5px 15px; background-color: white; border-radius: 4px; } QToolButton:checked { background-color: #cce5ff; border-color: #0078d4; }");
-    moduleSwitcherLayout->addWidget(todoButton);
-    m_moduleButtonGroup->addButton(todoButton, 0);
-    QToolButton* anniversaryButton = new QToolButton();
-    anniversaryButton->setText(tr("纪念日"));
-    anniversaryButton->setCheckable(true);
-    anniversaryButton->setStyleSheet("QToolButton { border: 1px solid #ccc; padding: 5px 15px; background-color: white; border-radius: 4px; } QToolButton:checked { background-color: #cce5ff; border-color: #0078d4; }");
-    moduleSwitcherLayout->addWidget(anniversaryButton);
-    m_moduleButtonGroup->addButton(anniversaryButton, 1);
-    moduleSwitcherLayout->addStretch();
+
     m_leftContentStack = new QStackedWidget();
+
+    // “待办”模块的左侧面板
     m_todoListPanel = new QWidget();
     QVBoxLayout* todoListLayout = new QVBoxLayout(m_todoListPanel);
-    todoListLayout->setContentsMargins(0, 8, 0, 0);
-    todoListLayout->setSpacing(0);
     m_listSelectionWidget = new QListWidget();
-    m_listSelectionWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+    m_listSelectionWidget->setObjectName("TodoListWidget");
+    m_listSelectionWidget->setContextMenuPolicy(Qt::CustomContextMenu); // 【重要修正】
     m_addNewListButton = new QToolButton();
     m_addNewListButton->setText(tr("＋ 新建列表"));
     todoListLayout->addWidget(new QLabel(tr("列表栏")));
     todoListLayout->addWidget(m_listSelectionWidget, 1);
     todoListLayout->addWidget(m_addNewListButton);
     m_leftContentStack->addWidget(m_todoListPanel);
+
+    // “纪念日”模块的左侧面板
     m_anniversaryPanel = new QWidget();
     QVBoxLayout* anniversaryLayout = new QVBoxLayout(m_anniversaryPanel);
-    anniversaryLayout->setContentsMargins(0, 8, 0, 0);
-    QHBoxLayout* anniversaryHeaderLayout = new QHBoxLayout();
-    anniversaryHeaderLayout->setContentsMargins(8, 0, 8, 4);
+    m_anniversaryCategoryWidget = new QListWidget();
+    m_anniversaryCategoryWidget->setObjectName("AnniversaryCategoryWidget");
+    m_anniversaryCategoryWidget->setContextMenuPolicy(Qt::CustomContextMenu); // 【重要修正】
     m_addAnniversaryCategoryButton = new QToolButton();
     m_addAnniversaryCategoryButton->setText("+");
+    QHBoxLayout* anniversaryHeaderLayout = new QHBoxLayout();
     anniversaryHeaderLayout->addWidget(new QLabel(tr("纪念日分类")));
     anniversaryHeaderLayout->addStretch();
     anniversaryHeaderLayout->addWidget(m_addAnniversaryCategoryButton);
-    m_anniversaryCategoryWidget = new QListWidget();
-    m_anniversaryCategoryWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     anniversaryLayout->addLayout(anniversaryHeaderLayout);
     anniversaryLayout->addWidget(m_anniversaryCategoryWidget, 1);
     m_leftContentStack->addWidget(m_anniversaryPanel);
-    m_settingsButton = new QToolButton();
-    m_settingsButton->setText(tr("⚙️ 设置与账户"));
-    leftPanelLayout->addWidget(moduleSwitcherWidget);
+
     leftPanelLayout->addWidget(m_leftContentStack, 1);
-    leftPanelLayout->addWidget(m_settingsButton);
+
+
+    // 2b. 创建“第三列” (旧的 m_rightContentStack) 的所有内容
     m_rightContentStack = new QStackedWidget();
+
+    // “待办”模块的右侧面板 (Task View Splitter)
     m_taskViewSplitter = new QSplitter(Qt::Horizontal);
     m_taskPanel = new QWidget();
     QVBoxLayout* taskLayout = new QVBoxLayout(m_taskPanel);
     m_currentListTitleLabel = new QLabel(tr("请选择一个列表"));
     m_taskItemsWidget = new QListWidget();
-    m_taskItemsWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-    m_addTodoLineEdit = new QLineEdit();
-    m_addTodoLineEdit->setPlaceholderText(tr("＋ 添加任务"));
+    m_taskItemsWidget->setObjectName("TaskItemsWidget");
+    m_taskItemsWidget->setContextMenuPolicy(Qt::CustomContextMenu); // 【重要修正】
+    m_addTodoLineEdit = new QLineEdit(tr("＋ 添加任务"));
     taskLayout->addWidget(m_currentListTitleLabel);
     taskLayout->addWidget(m_taskItemsWidget, 1);
     taskLayout->addWidget(m_addTodoLineEdit);
     m_taskDetailWidget = new TaskDetailWidget();
     m_taskViewSplitter->addWidget(m_taskPanel);
     m_taskViewSplitter->addWidget(m_taskDetailWidget);
-    m_taskViewSplitter->setSizes({1, 0});
     m_rightContentStack->addWidget(m_taskViewSplitter);
+
+    // “纪念日”模块的右侧面板 (Anniversary Content Stack)
     m_anniversaryContentStack = new QStackedWidget();
     m_anniversaryOverviewPanel = new QWidget();
     QVBoxLayout* overviewLayout = new QVBoxLayout(m_anniversaryOverviewPanel);
     m_anniversaryItemsWidget = new QListWidget();
-    m_anniversaryItemsWidget->setSpacing(10);
+    m_anniversaryItemsWidget->setObjectName("AnniversaryListWidget");
     m_addAnniversaryButton = new QToolButton();
     m_addAnniversaryButton->setText(tr("＋ 添加纪念日"));
     overviewLayout->addWidget(new QLabel(tr("所有纪念日与倒计时")));
@@ -137,17 +173,33 @@ void MainWindow::setupUi() {
     m_anniversaryDetailView = new AnniversaryDetailView();
     m_anniversaryContentStack->addWidget(m_anniversaryDetailView);
     m_rightContentStack->addWidget(m_anniversaryContentStack);
+
+
+    // 2c. 创建 QSplitter 并添加已创建好的控件
+    m_rootSplitter = new QSplitter(Qt::Horizontal);
     m_rootSplitter->addWidget(m_leftPanel);
     m_rootSplitter->addWidget(m_rightContentStack);
     m_rootSplitter->setStretchFactor(1, 3);
     m_rootSplitter->setSizes({280, 720});
-    setCentralWidget(m_rootSplitter);
-}
 
+    // 3. 将新的模块切换栏和 Splitter 添加到主布局
+    mainLayout->addWidget(moduleSwitcherPanel);
+    mainLayout->addWidget(m_rootSplitter, 1);
+
+    // 4. 设置中央 Widget
+    setCentralWidget(centralWidget);
+}
 
 void MainWindow::setupConnections() {
     // Module switcher
-    connect(m_moduleButtonGroup, &QButtonGroup::idClicked, this, &MainWindow::onModuleChanged);
+    //connect(m_moduleButtonGroup, &QButtonGroup::idClicked, this, &MainWindow::onModuleChanged);
+
+    connect(m_todoModuleButton, &QToolButton::clicked, this, [this](){
+        onModuleButtonClicked(0); // 0 代表待办模块
+    });
+    connect(m_anniversaryModuleButton, &QToolButton::clicked, this, [this](){
+        onModuleButtonClicked(1); // 1 代表纪念日模块
+    });
 
     // --- Todo connections ---
     connect(m_listSelectionWidget, &QListWidget::currentItemChanged, this, &MainWindow::onCurrentListChanged);
@@ -184,19 +236,31 @@ void MainWindow::setupConnections() {
     connect(m_addAnniversaryButton, &QToolButton::clicked, this, &MainWindow::onAddNewAnniversary);
     connect(m_anniversaryItemsWidget, &QListWidget::itemClicked, this, &MainWindow::onAnniversaryItemClicked);
     connect(m_anniversaryDetailView, &AnniversaryDetailView::backRequested, this, &MainWindow::onBackFromAnniversaryDetail);
-    connect(m_anniversaryService, &AnniversaryService::itemsChanged, this, &MainWindow::refreshAnniversaryCategories);
-    connect(m_anniversaryService, &AnniversaryService::itemsChanged, this, &MainWindow::refreshAnniversaryView);
+
+    connect(m_anniversaryService, &AnniversaryService::itemsChanged, this, &MainWindow::onAnniversaryDataChanged);
 
     connect(m_anniversaryDetailView, &AnniversaryDetailView::momentUpdated, this, &MainWindow::onAnniversaryMomentUpdated);
     connect(m_taskDetailWidget, &TaskDetailWidget::reminderChanged, this, &MainWindow::handleReminderChange);
+
+    connect(m_anniversaryDetailView, &AnniversaryDetailView::momentDeleteRequested, this, &MainWindow::onMomentDeleteRequested);
+    connect(m_anniversaryDetailView, &AnniversaryDetailView::momentAdded, this, &MainWindow::onMomentAdded);
+    connect(m_anniversaryDetailView, &AnniversaryDetailView::refreshRequested, this, &MainWindow::safeRefreshAnniversaryDetail);
+
 
 
 }
 
 void MainWindow::onAnniversaryMomentUpdated(const QUuid& anniversaryId, const Moment& moment)
 {
-    // 主窗口作为总指挥，命令服务层去更新数据
+    // 1. 命令服务层去更新并保存后台数据。
     m_anniversaryService->updateMoment(anniversaryId, moment);
+
+    // 2. 【核心修正】使用单次定时器实现异步刷新
+    // 这会将 safeRefreshAnniversaryDetail 的调用“帖子”Qt的事件队列末尾。
+    // 它会在当前所有函数（包括 onMomentCardClicked）都执行完毕并返回后，才被安全地执行。
+    QTimer::singleShot(0, this, [this, anniversaryId]() {
+        safeRefreshAnniversaryDetail(anniversaryId);
+    });
 }
 
 void MainWindow::onDetailCloseRequested() {
@@ -632,9 +696,10 @@ void MainWindow::refreshAnniversaryView() {
 
             m_anniversaryItemsWidget->setItemWidget(listItem, itemWidget);
 
-            connect(itemWidget, &AnniversaryItemWidget::itemDeleted, this, &MainWindow::onAnniversaryItemDeleted);
+            connect(itemWidget, &AnniversaryItemWidget::deleteRequested, this, &MainWindow::onAnniversaryItemDeleted);
             connect(itemWidget, &AnniversaryItemWidget::addToTodoRequested, this, &MainWindow::onAddToTodoRequested);
             connect(itemWidget, &AnniversaryItemWidget::addMomentRequested, this, &MainWindow::onAddMomentRequested);
+
         }
     }
     m_anniversaryItemsWidget->setUpdatesEnabled(true);
@@ -668,29 +733,27 @@ void MainWindow::onAnniversaryItemDeleted(const QUuid& id)
 
 void MainWindow::onAddToTodoRequested(const QUuid& anniversaryId)
 {
-    // 1. 获取源项目信息
+    // 1. 获取源项目信息 (这部分逻辑保持不变)
     AnniversaryItem* sourceItem = m_anniversaryService->findItemById(anniversaryId);
     if (!sourceItem || sourceItem->eventType() != AnniversaryEventType::Countdown) {
         return;
     }
 
-    // 2. 弹出列表选择对话框
+    // 2. 弹出列表选择对话框 (这部分逻辑保持不变)
     TodoListSelectionDialog listDialog(m_todoService->getAllLists(), this);
     if (listDialog.exec() != QDialog::Accepted) {
-        return; // 用户点击了取消
+        return;
     }
 
-    // 3. 处理对话框返回的结果
+    // 3. 处理对话框返回的结果 (这部分逻辑保持不变)
     QUuid targetListId;
     if (listDialog.isNewListCreated()) {
-        // 如果用户在对话框中创建了一个新列表
         targetListId = m_todoService->addList(listDialog.getNewListName());
         if (targetListId.isNull()) {
             QMessageBox::warning(this, tr("错误"), tr("无法创建新的待办列表。"));
             return;
         }
     } else {
-        // 如果用户选择了一个已存在的列表
         targetListId = listDialog.getSelectedListId();
         if (targetListId.isNull()) {
             QMessageBox::warning(this, tr("错误"), tr("没有选择任何有效的待办列表。"));
@@ -698,16 +761,12 @@ void MainWindow::onAddToTodoRequested(const QUuid& anniversaryId)
         }
     }
 
-    // ------------------- 【已删除重复的代码块】 -------------------
-    //  您原来的代码在这里重复了获取 sourceItem 和 targetListId 的逻辑
-    // -----------------------------------------------------------
-
-    // 4. 创建新的 TodoItem
+    // 4. 创建新的 TodoItem (这部分逻辑保持不变)
     TodoItem newTodo(sourceItem->title());
     newTodo.setDueDate(sourceItem->targetDateTime());
     newTodo.setSourceAnniversaryId(sourceItem->id());
 
-    // 5. 询问用户是否设置提醒
+    // 5. 询问用户是否设置提醒 (这部分逻辑保持不变)
     auto reply = QMessageBox::question(this,
                                        tr("设置提醒"),
                                        tr("是否要为此新待办事项“%1”设置提醒？").arg(newTodo.title()),
@@ -715,26 +774,28 @@ void MainWindow::onAddToTodoRequested(const QUuid& anniversaryId)
                                        QMessageBox::Yes);
 
     if (reply == QMessageBox::Yes) {
-        // 创建一个默认的 Reminder 对象 (在截止前15分钟提醒，不重复)
+        // 创建一个默认的 Reminder 对象
         Reminder initialReminder;
         initialReminder.setActive(true);
+        // 默认将首次提醒时间设置为截止日期的前15分钟
         initialReminder.setNextReminderTime(newTodo.dueDate().addSecs(-15 * 60));
-        initialReminder.setIntervalType(ReminderIntervalType::None);
+        initialReminder.setIntervalType(ReminderIntervalType::None); // 默认不重复
 
-        // 弹出我们强大的新对话框，让用户进行配置
-        ReminderSettingsDialog reminderDialog(initialReminder, this);
+        // --- 【核心修正】在这里使用我们全新的 ReminderDialog ---
+        ReminderDialog reminderDialog(initialReminder, this);
         if (reminderDialog.exec() == QDialog::Accepted) {
             newTodo.setReminder(reminderDialog.getReminder());
         }
+        // ---------------------------------------------------
     }
 
-    // 6. 将配置好的 TodoItem 添加到目标列表
+    // 6. 将配置好的 TodoItem 添加到目标列表 (这部分逻辑保持不变)
     m_todoService->addTodoToList(targetListId, newTodo);
 
-    // 7. 标记原始的 AnniversaryItem 为“已添加”
+    // 7. 标记原始的 AnniversaryItem 为“已添加” (这部分逻辑保持不变)
     m_anniversaryService->markAsAddedToTodo(anniversaryId);
 
-    // 8. 最终的成功提示
+    // 8. 最终的成功提示 (这部分逻辑保持不变)
     QMessageBox::information(this, tr("操作成功"), tr("已将倒计时“%1”添加到待办列表中。").arg(sourceItem->title()));
 }
 
@@ -880,4 +941,61 @@ void MainWindow::handleReminderChange(const QUuid& taskId, const Reminder& remin
         updatedTask.setReminder(reminder);
         m_todoService->updateTodoInList(listId, updatedTask);
     }
+}
+
+void MainWindow::safeRefreshAnniversaryDetail(const QUuid& anniversaryId)
+{
+    // 检查详情页是否仍然可见
+    if (m_anniversaryContentStack->currentWidget() == m_anniversaryDetailView) {
+        // 从服务层获取最新的、包含已修改内容的数据模型
+        if (const auto* updatedItem = m_anniversaryService->findItemById(anniversaryId)) {
+            qDebug() << "Safely refreshing AnniversaryDetailView for item:" << anniversaryId;
+            // 将最新的数据模型重新设置给详情页，强制它用新数据重绘
+            m_anniversaryDetailView->displayAnniversary(*updatedItem);
+        } else {
+            // 如果项目已被删除，则返回到概览页
+            onBackFromAnniversaryDetail();
+        }
+    }
+}
+
+
+// 【重要】确保 onMomentDeleteRequested 也使用异步刷新
+void MainWindow::onMomentDeleteRequested(const QUuid& anniversaryId, const QUuid& momentId)
+{
+    m_anniversaryService->deleteMoment(anniversaryId, momentId);
+
+    QTimer::singleShot(0, this, [this, anniversaryId]() {
+        safeRefreshAnniversaryDetail(anniversaryId);
+    });
+}
+
+void MainWindow::onMomentAdded(const QUuid& anniversaryId, const Moment& newMoment)
+{
+    m_anniversaryService->addMomentToItem(anniversaryId, newMoment);
+    // 调用服务后，服务层会自动发射 itemsChanged() 信号，
+    // 我们之前建立的 onAnniversaryDataChanged 槽会负责刷新所有UI，无需在此处编写刷新代码。
+}
+
+void MainWindow::onAnniversaryDataChanged()
+{
+    qDebug() << "[MainWindow] Detected AnniversaryService data change via itemsChanged() signal.";
+
+    // 只刷新概览页和分类
+    refreshAnniversaryCategories();
+    refreshAnniversaryView();
+
+    // 【删除】此处不再需要刷新详情页的逻辑，因为它已经由 onAnniversaryMomentUpdated 和 onMomentDeleteRequested 异步处理了。
+}
+
+void MainWindow::onModuleButtonClicked(int id)
+{
+    // 确保只有一个按钮被选中
+    m_todoModuleButton->setChecked(id == 0);
+    m_anniversaryModuleButton->setChecked(id == 1);
+
+    // 切换左右两个堆叠窗口的内容
+    m_leftContentStack->setCurrentIndex(id);
+    m_rightContentStack->setCurrentIndex(id);
+    qDebug() << "Switched to module with ID:" << id;
 }

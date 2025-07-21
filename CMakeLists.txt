@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # 使用一个清晰、完整的命令找到所有需要的 Qt6 模块
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Concurrent)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Concurrent Multimedia)
 
 # 定义源文件列表
 set(PROJECT_SOURCES
@@ -41,6 +41,7 @@ set(PROJECT_SOURCES
     gui/TodoListNameWidget.cpp
     gui/completedheaderwidget.h
     gui/completedheaderwidget.cpp
+    gui/AnniversaryItemWidget.h gui/AnniversaryItemWidget.cpp
 )
 
 # 定义资源文件列表
@@ -53,7 +54,7 @@ qt_add_executable(ChronoVault
     MANUAL_FINALIZATION
     ${PROJECT_SOURCES}
     ${PROJECT_RESOURCES}
-    gui/AnniversaryItemWidget.h gui/AnniversaryItemWidget.cpp
+
     gui/AddAnniversaryDialog.h gui/AddAnniversaryDialog.cpp
     core/Reminder.h
     gui/TodoListSelectionDialog.h gui/TodoListSelectionDialog.cpp
@@ -66,6 +67,14 @@ qt_add_executable(ChronoVault
     gui/MomentDetailDialog.h gui/MomentDetailDialog.cpp
     gui/ImageViewerDialog.h gui/ImageViewerDialog.cpp
     gui/ClickableLabel.h gui/ClickableLabel.cpp
+    gui/ClickableTextBrowser.h
+    gui/NotificationWidget.h gui/NotificationWidget.cpp
+    gui/ReminderDialog.h gui/ReminderDialog.cpp
+    style.qss
+    gui/ZoomableGraphicsView.h gui/ZoomableGraphicsView.cpp
+
+
+
 
 )
 
@@ -80,6 +89,7 @@ target_link_libraries(ChronoVault PRIVATE
     Qt6::Gui
     Qt6::Widgets
     Qt6::Concurrent
+    Qt6::Multimedia
 )
 
 # --- 以下为平台相关的设置 ---

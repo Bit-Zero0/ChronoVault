@@ -2,18 +2,18 @@
 #include <QString>
 #include <QDateTime>
 #include <QUuid>
-#include <QList> // ÒıÈë QList
+#include <QList> // å¼•å…¥ QList
 #include "core/SubTask.h"
 #include "core/Reminder.h"
 
 class TodoItem {
 public:
-    // ¹¹Ôìº¯ÊıÏÖÔÚ°üº¬´´½¨ÈÕÆÚ
+    // æ„é€ å‡½æ•°ç°åœ¨åŒ…å«åˆ›å»ºæ—¥æœŸ
 //    TodoItem(QString title, QString description = "", QDateTime dueDate = QDateTime())
 //        : m_id(QUuid::createUuid()),
 //        m_title(std::move(title)),
 //        m_description(std::move(description)),
-//        m_creationDate(QDateTime::currentDateTime()), // ¼ÇÂ¼´´½¨Ê±¼ä
+//        m_creationDate(QDateTime::currentDateTime()), // è®°å½•åˆ›å»ºæ—¶é—´
 //        m_dueDate(std::move(dueDate)),
 //        m_isCompleted(false) {
 //    }
@@ -48,7 +48,7 @@ public:
 private:
     QUuid m_id;
     QString m_title;
-    QString m_description; // Õâ¸ö½«ÓÃ×÷¡°±¸×¢¡±
+    QString m_description; // è¿™ä¸ªå°†ç”¨ä½œâ€œå¤‡æ³¨â€
 
     QDateTime m_creationDate;
     QDateTime m_dueDate;
