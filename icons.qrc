@@ -1,6 +1,8 @@
 <RCC>
     <qresource prefix="/icons">
         <file>logo1.png</file>
-        <file>logo1-24.png24</file>
+        <file>icons/anniversary.svg</file>
+        <file>icons/TODO.svg</file>
+        <file>icons/set.svg</file>
     </qresource>
 </RCC>

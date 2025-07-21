@@ -6,6 +6,7 @@
 #include "core/Reminder.h"
 #include "core/SubTask.h"
 
+
 // Forward declarations
 class TodoService;
 class AnniversaryService;
@@ -25,6 +26,7 @@ class QDateTime;
 class TodoItem;
 class SubTask;
 class Reminder;
+class QVBoxLayout;
 
 class MainWindow : public QMainWindow
 {
@@ -35,6 +37,8 @@ public:
 
 
 private slots:
+    void onModuleButtonClicked(int id); // 用于响应新按钮点击的槽
+
     // Module Switching
     void onModuleChanged(int id);
 
@@ -104,7 +108,12 @@ private:
     // UI Widgets
     QSplitter* m_rootSplitter;
     QWidget* m_leftPanel;
-    QButtonGroup* m_moduleButtonGroup;
+    //QButtonGroup* m_moduleButtonGroup;
+
+    QVBoxLayout* m_moduleSwitcherLayout; // 【新增】用于放置垂直模块按钮的布局
+    QToolButton* m_todoModuleButton;     // 【新增】独立的待办模块按钮
+    QToolButton* m_anniversaryModuleButton;
+
     QStackedWidget* m_leftContentStack;
     QWidget* m_todoListPanel;
     QListWidget* m_listSelectionWidget;

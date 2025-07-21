@@ -190,19 +190,9 @@ const AnniversaryItem& AnniversaryItemWidget::item() const
     return m_item;
 }
 
-// void AnniversaryItemWidget::contextMenuEvent(QContextMenuEvent *event)
-// {
-//     QMenu contextMenu(this);
-//     // 添加一个“删除”动作，并将其 triggered 信号连接到我们的删除槽
-//     QAction *deleteAction = contextMenu.addAction(tr("删除此项"));
-//     connect(deleteAction, &QAction::triggered, this, &AnniversaryItemWidget::requestDelete);
-
-//     // 在鼠标光标的位置显示菜单
-//     contextMenu.exec(event->globalPos());
-// }
 
 
-// 【新增】统一的删除请求处理函数
+// 统一的删除请求处理函数
 void AnniversaryItemWidget::requestDelete()
 {
     // 弹出确认对话框

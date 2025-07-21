@@ -29,8 +29,7 @@ protected:
     void enterEvent(QEnterEvent *event) override;
     void leaveEvent(QEvent *event) override;
 
-    // 重写 contextMenuEvent 来处理右键菜单
-    //void contextMenuEvent(QContextMenuEvent *event) override;
+
 
 private slots:
     // 每秒更新一次倒计时显示
