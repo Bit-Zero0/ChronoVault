@@ -4,5 +4,6 @@
         <file>icons/anniversary.svg</file>
         <file>icons/TODO.svg</file>
         <file>icons/set.svg</file>
+        <file>style.qss</file>
     </qresource>
 </RCC>

@@ -70,6 +70,8 @@ qt_add_executable(ChronoVault
     gui/ClickableTextBrowser.h
     gui/NotificationWidget.h gui/NotificationWidget.cpp
     gui/ReminderDialog.h gui/ReminderDialog.cpp
+    style.qss
+    gui/ZoomableGraphicsView.h gui/ZoomableGraphicsView.cpp
 
 
 

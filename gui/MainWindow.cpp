@@ -62,6 +62,7 @@ void MainWindow::setupUi() {
 
     // --- 创建最左侧的垂直模块切换栏 ---
     QWidget* moduleSwitcherPanel = new QWidget();
+    moduleSwitcherPanel->setObjectName("moduleSwitcherPanel");
     moduleSwitcherPanel->setStyleSheet("background-color: #f3f3f3; border-right: 1px solid #e0e0e0;");
     moduleSwitcherPanel->setFixedWidth(60);
 
@@ -109,6 +110,7 @@ void MainWindow::setupUi() {
     m_todoListPanel = new QWidget();
     QVBoxLayout* todoListLayout = new QVBoxLayout(m_todoListPanel);
     m_listSelectionWidget = new QListWidget();
+    m_listSelectionWidget->setObjectName("TodoListWidget");
     m_listSelectionWidget->setContextMenuPolicy(Qt::CustomContextMenu); // 【重要修正】
     m_addNewListButton = new QToolButton();
     m_addNewListButton->setText(tr("＋ 新建列表"));
@@ -121,6 +123,7 @@ void MainWindow::setupUi() {
     m_anniversaryPanel = new QWidget();
     QVBoxLayout* anniversaryLayout = new QVBoxLayout(m_anniversaryPanel);
     m_anniversaryCategoryWidget = new QListWidget();
+    m_anniversaryCategoryWidget->setObjectName("AnniversaryCategoryWidget");
     m_anniversaryCategoryWidget->setContextMenuPolicy(Qt::CustomContextMenu); // 【重要修正】
     m_addAnniversaryCategoryButton = new QToolButton();
     m_addAnniversaryCategoryButton->setText("+");
@@ -144,6 +147,7 @@ void MainWindow::setupUi() {
     QVBoxLayout* taskLayout = new QVBoxLayout(m_taskPanel);
     m_currentListTitleLabel = new QLabel(tr("请选择一个列表"));
     m_taskItemsWidget = new QListWidget();
+    m_taskItemsWidget->setObjectName("TaskItemsWidget");
     m_taskItemsWidget->setContextMenuPolicy(Qt::CustomContextMenu); // 【重要修正】
     m_addTodoLineEdit = new QLineEdit(tr("＋ 添加任务"));
     taskLayout->addWidget(m_currentListTitleLabel);
@@ -159,6 +163,7 @@ void MainWindow::setupUi() {
     m_anniversaryOverviewPanel = new QWidget();
     QVBoxLayout* overviewLayout = new QVBoxLayout(m_anniversaryOverviewPanel);
     m_anniversaryItemsWidget = new QListWidget();
+    m_anniversaryItemsWidget->setObjectName("AnniversaryListWidget");
     m_addAnniversaryButton = new QToolButton();
     m_addAnniversaryButton->setText(tr("＋ 添加纪念日"));
     overviewLayout->addWidget(new QLabel(tr("所有纪念日与倒计时")));

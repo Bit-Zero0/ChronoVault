@@ -4,6 +4,7 @@
 #include "services/TodoService.h"
 #include <QSystemTrayIcon>
 #include <QIcon>
+#include <QFile>
 #include <QMessageBox>
 #include <QStyle> // <-- 【重要】引入 QStyle 头文件
 
@@ -38,6 +39,16 @@ int main(int argc, char *argv[])
     }
 
     TodoService::instance()->setTrayIcon(&trayIcon);
+
+    QFile styleFile(":/icons/style.qss"); // 从资源文件中读取
+    if (styleFile.open(QFile::ReadOnly | QFile::Text)) {
+        QString styleSheet = QLatin1String(styleFile.readAll());
+        app.setStyleSheet(styleSheet);
+        qDebug() << "Style sheet loaded successfully.";
+    } else {
+        qWarning() << "Could not load style sheet.";
+    }
+
 
     MainWindow mainWindow;
     mainWindow.show();

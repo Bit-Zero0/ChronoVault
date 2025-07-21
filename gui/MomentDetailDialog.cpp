@@ -63,8 +63,8 @@ void MomentDetailDialog::setupUi(const Moment& moment)
             m_imageStack->addWidget(imgLabel);
             // 连接点击信号，以便未来实现图片放大查看
             connect(imgLabel, &ClickableLabel::clicked, this, [this](const QString& p){
-                // ImageViewerDialog viewer(p, this);
-                // viewer.exec();
+                ImageViewerDialog viewer(p, this);
+                viewer.exec();
                 qDebug() << "Image clicked:" << p; // 临时的占位逻辑
             });
         }
