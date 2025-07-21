@@ -281,12 +281,18 @@ void TodoService::setTrayIcon(QSystemTrayIcon* trayIcon) {
 
 
 
+TodoItem* TodoService::findTaskById(const QUuid& taskId)
+{
+    for (auto& list : m_lists) {
+        for (auto& item : list.items) {
+            if (item.id() == taskId) {
+                return &item;
+            }
+        }
+    }
+    return nullptr;
+}
 
-
-
-// services/TodoService.cpp
-
-// services/TodoService.cpp
 
 void TodoService::checkReminders() {
     if (!m_trayIcon) return; // 安全检查
@@ -294,7 +300,7 @@ void TodoService::checkReminders() {
     for (auto& list : m_lists) {
         for (auto& task : list.items) {
             // 只读取 reminder 数据，绝不修改
-            const Reminder& reminder = task.reminder();
+            Reminder reminder = task.reminder();
 
             if (reminder.isActive() && reminder.nextReminderTime() <= QDateTime::currentDateTime() && !task.isCompleted()) {
 
@@ -302,7 +308,17 @@ void TodoService::checkReminders() {
                 if (m_activeNotifications.contains(task.id())) {
                     continue;
                 }
+\
                 m_activeNotifications.insert(task.id());
+
+                bool isCatchUp = reminder.nextReminderTime().date() < QDate::currentDate() ||
+                                 (reminder.nextReminderTime().date() == QDate::currentDate() && reminder.nextReminderTime().time() < reminder.baseTime());
+
+                if (isCatchUp) {
+                    qDebug() << "Catch-up reminder for task:" << task.title();
+                }
+
+
                 qDebug() << "Lock acquired for task:" << task.id();
 
                 if (!reminder.soundPath().isEmpty() && reminder.soundPath() != "none") {
@@ -335,9 +351,11 @@ void TodoService::checkReminders() {
 
                 notification->show();
 
-                // 【核心修正】删除下面这两行导致数据竞争的致命代码
-                // task.setReminder(reminder);
-                // saveData();
+                if (reminder.intervalType() != ReminderIntervalType::None) {
+                    calculateNextBaseReminder(reminder);
+                    task.setReminder(reminder);
+                    saveData();
+                }
             }
         }
     }
@@ -381,17 +399,12 @@ QUuid TodoService::findOrCreateInboxList()
 void TodoService::onSnoozeRequested(const QUuid& taskId, int minutes)
 {
     qDebug() << "Snooze requested for task:" << taskId << "for" << minutes << "minutes.";
-    for (auto& list : m_lists) {
-        for (auto& task : list.items) {
-            if (task.id() == taskId) {
-                Reminder reminder = task.reminder();
-                // 将提醒时间设置为 N 分钟后
-                reminder.setNextReminderTime(QDateTime::currentDateTime().addSecs(minutes * 60));
-                task.setReminder(reminder);
-                saveData();
-                return;
-            }
-        }
+    if (auto* task = findTaskById(taskId)) { // (假设您有一个findTaskById的辅助函数)
+        Reminder reminder = task->reminder();
+        // 只修改下一次触发时间，不触碰基准规则
+        reminder.setNextReminderTime(QDateTime::currentDateTime().addSecs(minutes * 60));
+        task->setReminder(reminder);
+        saveData();
     }
 }
 
@@ -399,46 +412,48 @@ void TodoService::onSnoozeRequested(const QUuid& taskId, int minutes)
 void TodoService::onDismissRequested(const QUuid& taskId)
 {
     qDebug() << "Dismiss requested for task:" << taskId;
-    for (auto& list : m_lists) {
-        for (auto& task : list.items) {
-            if (task.id() == taskId) {
-                Reminder reminder = task.reminder();
-                // 将提醒设置为非激活状态
-                reminder.setActive(false);
-                task.setReminder(reminder);
-                saveData();
-                return;
-            }
-        }
+    if (auto* task = findTaskById(taskId)) {
+        Reminder reminder = task->reminder();
+        // 计算并设置到下一个基准时间（例如明天）
+        calculateNextBaseReminder(reminder);
+        task->setReminder(reminder);
+        saveData();
     }
 }
 
 void TodoService::onNotificationClosed(const QUuid& taskId)
 {
-    // 1. 首先，立即释放锁，这是最重要的
     m_activeNotifications.remove(taskId);
     qDebug() << "Lock released for task:" << taskId;
 
-    // 2. 查找对应的任务，这是我们新增的核心逻辑
-    for (auto& list : m_lists) {
-        for (auto& task : list.items) {
-            if (task.id() == taskId) {
-                Reminder reminder = task.reminder();
-
-                // 3. 检查这个提醒是否仍然处于“激活”状态。
-                // 如果用户点击了“不再提醒”，onDismissRequested 会把它设为 false。
-                // 如果用户点击了“稍后提醒”，onSnoozeRequested 会更新它的时间。
-                // 只有当用户什么都没做，它才会保持原样。
-                if (reminder.isActive() && reminder.nextReminderTime() <= QDateTime::currentDateTime()) {
-                    qDebug() << "Notification for task" << taskId << "closed without action. Snoozing for default 5 minutes.";
-
-                    // 4. 【默认行为】将提醒设置为5分钟后再次触发
-                    reminder.setNextReminderTime(QDateTime::currentDateTime().addSecs(5 * 60));
-                    task.setReminder(reminder);
-                    saveData();
-                }
-                return; // 找到任务并处理完毕，即可退出
-            }
+    if (auto* task = findTaskById(taskId)) {
+        Reminder reminder = task->reminder();
+        if (reminder.isActive() && reminder.nextReminderTime() <= QDateTime::currentDateTime()) {
+            qDebug() << "Notification for task" << taskId << "closed without action. Snoozing for default 5 minutes.";
+            // 默认小睡，只修改下一次触发时间
+            reminder.setNextReminderTime(QDateTime::currentDateTime().addSecs(10 * 60));
+            task->setReminder(reminder);
+            saveData();
         }
     }
+}
+
+void TodoService::calculateNextBaseReminder(Reminder& reminder)
+{
+    if (reminder.intervalType() == ReminderIntervalType::None) {
+        reminder.setActive(false);
+        return;
+    }
+
+    QDateTime nextTime = QDateTime(QDate::currentDate(), reminder.baseTime());
+
+    // 循环直到找到未来的一个时间点
+    while (nextTime <= QDateTime::currentDateTime()) {
+        if (reminder.intervalType() == ReminderIntervalType::Days) {
+            nextTime = nextTime.addDays(reminder.intervalValue());
+        }
+        // 您未来可以添加每周、每月等逻辑
+    }
+    reminder.setNextReminderTime(nextTime);
+    reminder.setActive(true); // 确保它是激活的
 }

@@ -23,6 +23,7 @@ QJsonObject Reminder::toJson() const {
     QJsonObject json;
     json["isActive"] = m_isActive;
     json["nextReminderTime"] = m_nextReminderTime.toString(Qt::ISODate);
+    json["baseTime"] = m_baseTime.toString("HH:mm:ss");
     json["intervalType"] = static_cast<int>(m_intervalType);
     json["intervalValue"] = m_intervalValue;
      json["soundPath"] = m_soundPath;
@@ -33,6 +34,7 @@ Reminder Reminder::fromJson(const QJsonObject& json) {
     Reminder r;
     r.m_isActive = json["isActive"].toBool();
     r.m_nextReminderTime = QDateTime::fromString(json["nextReminderTime"].toString(), Qt::ISODate);
+    r.m_baseTime = QTime::fromString(json["baseTime"].toString(), "HH:mm:ss");
     r.m_intervalType = static_cast<ReminderIntervalType>(json["intervalType"].toInt());
     r.m_intervalValue = json["intervalValue"].toInt();
     if (json.contains("soundPath") && !json.value("soundPath").toString().isEmpty()) {

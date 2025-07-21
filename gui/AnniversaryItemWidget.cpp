@@ -100,23 +100,28 @@ void AnniversaryItemWidget::onAddToTodoClicked()
 
 void AnniversaryItemWidget::updateCountdown() {
     QDateTime target = m_item.targetDateTime();
-    // 【核心修正】在进行任何日期计算前，必须检查日期是否有效
     if (!target.isValid()) {
         m_countdownLabel->setText(tr("无效日期"));
         return;
     }
 
     QDateTime now = QDateTime::currentDateTime();
-    //QDateTime target = m_item.targetDateTime();
-
     qint64 secondsDiff = now.secsTo(target);
 
-    if (secondsDiff > 0) {
-        // 倒计时
-        m_countdownLabel->setText(formatRemainingTime(secondsDiff));
-        m_targetDateLabel->setText(tr("目标于: ") + target.toString("yyyy-MM-dd HH:mm:ss"));
+    // 根据事件类型来决定显示逻辑
+    if (m_item.eventType() == AnniversaryEventType::Countdown) {
+        // --- 这是倒计时事件 ---
+        if (secondsDiff > 0) {
+            // 倒计时还未结束
+            m_countdownLabel->setText(tr("还剩 %1").arg(formatRemainingTime(secondsDiff)));
+            m_targetDateLabel->setText(tr("目标于: ") + target.toString("yyyy-MM-dd HH:mm"));
+        } else {
+            // 倒计时已结束
+            m_countdownLabel->setText(tr("已过 %1").arg(formatRemainingTime(-secondsDiff))); // 传入正数秒
+            m_targetDateLabel->setText(tr("发生于: ") + target.toString("yyyy-MM-dd HH:mm"));
+        }
     } else {
-        // 纪念日 / 已过期的倒计时
+        // --- 这是纪念日事件 ---
         qint64 daysPassed = target.daysTo(now);
         m_countdownLabel->setText(tr("已 %1 天").arg(daysPassed));
         m_targetDateLabel->setText(tr("发生于: ") + target.toString("yyyy-MM-dd"));
@@ -124,6 +129,12 @@ void AnniversaryItemWidget::updateCountdown() {
 }
 
 QString AnniversaryItemWidget::formatRemainingTime(qint64 totalSeconds) const {
+    // 确保秒数不为负
+    if (totalSeconds < 0) {
+        totalSeconds = 0;
+    }
+
+    // 1. 计算出天、小时、分钟和秒
     const qint64 days = totalSeconds / (24 * 3600);
     totalSeconds %= (24 * 3600);
     const qint64 hours = totalSeconds / 3600;
@@ -131,14 +142,27 @@ QString AnniversaryItemWidget::formatRemainingTime(qint64 totalSeconds) const {
     const qint64 minutes = totalSeconds / 60;
     const qint64 seconds = totalSeconds % 60;
 
+    // 2. 使用一个列表来动态构建最终的字符串
+    QStringList parts;
+
+    // 3. 只有当单位不为0时，才将其添加到列表中
     if (days > 0) {
-        return tr("还剩 %1 天").arg(days);
-    } else {
-        return QString("%1:%2:%3")
-            .arg(hours, 2, 10, QChar('0'))
-            .arg(minutes, 2, 10, QChar('0'))
-            .arg(seconds, 2, 10, QChar('0'));
+        parts << tr("%1天").arg(days);
     }
+    if (hours > 0) {
+        parts << tr("%1小时").arg(hours);
+    }
+    if (minutes > 0) {
+        parts << tr("%1分钟").arg(minutes);
+    }
+
+    // 4. 【特殊情况】如果天、小时、分钟都为0，那么我们应该显示秒
+    if (parts.isEmpty()) {
+        parts << tr("%1秒").arg(seconds);
+    }
+
+    // 5. 将列表中的所有部分用空格连接成一个最终的字符串
+    return parts.join(" ");
 }
 
 void AnniversaryItemWidget::enterEvent(QEnterEvent *event) {

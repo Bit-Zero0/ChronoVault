@@ -101,8 +101,4 @@ void MomentCardWidget::updateData(const Moment& newMoment)
     // 2. 只更新界面上变化的文本内容
     m_textLabel->setText(newMoment.text());
 
-    // 也可以在这里添加更新图片和时间戳的逻辑（如果它们也会变的话）
-    // QPixmap pixmap(newMoment.imagePaths().first());
-    // m_imageLabel->setPixmap(pixmap.scaled(m_imageLabel->size(), ...));
-    // m_timestampLabel->setText(newMoment.timestamp().toString("yyyy-MM-dd"));
 }

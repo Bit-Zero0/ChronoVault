@@ -29,7 +29,7 @@ TaskDetailWidget::TaskDetailWidget(QWidget* parent)
 
     connect(m_titleLineEdit, &QLineEdit::editingFinished, this, &TaskDetailWidget::onTitleEditingFinished);
     //connect(m_notesTextEdit, &QTextEdit::textChanged, this, &TaskDetailWidget::onNotesChanged);
-    m_notesTextEdit->installEventFilter(this);
+    //m_notesTextEdit->installEventFilter(this);
     connect(m_completedCheckBox, &QCheckBox::stateChanged, this, &TaskDetailWidget::onCompletedStateChanged);
     connect(m_deleteButton, &QPushButton::clicked, this, &TaskDetailWidget::onDeleteButtonClicked);
     connect(m_addSubTaskLineEdit, &QLineEdit::returnPressed, this, &TaskDetailWidget::onAddSubTaskLineEditReturnPressed);

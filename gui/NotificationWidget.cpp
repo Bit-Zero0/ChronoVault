@@ -75,6 +75,7 @@ void NotificationWidget::setupUi(const QString& title, const QString& message)
 
 
     m_snoozeComboBox = new QComboBox();
+    m_snoozeComboBox->addItem(tr("1 分钟后"), 1);
     m_snoozeComboBox->addItem(tr("5 分钟后"), 5);
     m_snoozeComboBox->addItem(tr("10 分钟后"), 10);
     m_snoozeComboBox->addItem(tr("20 分钟后"), 20);

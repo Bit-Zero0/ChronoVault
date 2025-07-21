@@ -40,6 +40,7 @@ public:
 
     TodoItem* findTodoById(const QUuid& listId, const QUuid& todoId);
     TodoList* findListById(const QUuid& listId);
+    TodoItem* findTaskById(const QUuid& taskId);
 
     void setTrayIcon(QSystemTrayIcon* trayIcon);
 
@@ -63,6 +64,7 @@ private:
     TodoService(const TodoService&) = delete;
     TodoService& operator=(const TodoService&) = delete;
 
+    void calculateNextBaseReminder(Reminder& reminder);
 
     // 数据存储
     QList<TodoList> m_lists;

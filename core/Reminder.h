@@ -2,6 +2,7 @@
 
 #include <QDateTime>
 #include <QJsonObject>
+#include <QTime>
 
 enum class ReminderIntervalType {
     None,
@@ -33,6 +34,8 @@ public:
     int intervalValue() const { return m_intervalValue; }
     void setIntervalValue(int value) { m_intervalValue = value; }
 
+    QTime baseTime() const { return m_baseTime; }
+    void setBaseTime(const QTime& time) { m_baseTime = time; }
     QString soundPath() const { return m_soundPath; }
     void setSoundPath(const QString& path) { m_soundPath = path; }
 
@@ -44,6 +47,7 @@ public:
 private:
     bool m_isActive;
     QDateTime m_nextReminderTime;
+    QTime m_baseTime;
     ReminderIntervalType m_intervalType;
     int m_intervalValue;
     QString m_soundPath;
