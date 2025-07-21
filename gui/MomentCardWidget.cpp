@@ -5,6 +5,7 @@
 #include <QMouseEvent>
 #include <QToolButton>
 #include <QEnterEvent>
+#include <QFontMetrics>
 
 MomentCardWidget::MomentCardWidget(const Moment& moment, QWidget *parent)
     : QFrame(parent), m_moment(moment)
@@ -27,31 +28,62 @@ void MomentCardWidget::setupUi(const Moment& moment) {
     setStyleSheet("MomentCardWidget { border: 1px solid #e0e0e0; border-radius: 4px; background-color: white; }");
 
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
-    mainLayout->setContentsMargins(5, 5, 5, 5);
+    mainLayout->setContentsMargins(8, 8, 8, 8);
     mainLayout->setSpacing(4);
 
-    // 图片预览区，将局部变量赋值给成员变量
+    // 1. 创建所有UI元素
     m_imageLabel = new QLabel();
-    m_imageLabel->setAlignment(Qt::AlignCenter);
-    m_imageLabel->setFixedSize(150, 80);
-    if (!moment.imagePaths().isEmpty()) {
+    m_timestampLabel = new QLabel();
+    m_textLabel = new QLabel();
+
+    // 2. 将它们按固定顺序添加到布局中
+    mainLayout->addWidget(m_imageLabel);
+    mainLayout->addWidget(m_timestampLabel);
+    mainLayout->addWidget(m_textLabel);
+    mainLayout->addStretch(); // 弹簧，确保内容总是靠上对齐
+
+    // 3. --- 【核心逻辑】根据有无图片，配置UI ---
+    if (moment.imagePaths().isEmpty()) {
+        // --- 无图片模式 ---
+        m_imageLabel->setVisible(false); // 隐藏图片控件
+
+        // 将时间戳标签用作标题
+        m_timestampLabel->setText(moment.timestamp().toString("yyyy-MM-dd hh:mm"));
+        // 【重要修正】设置更大、居中的标题样式
+        m_timestampLabel->setStyleSheet("font-size: 14px; font-weight: bold; color: #333;");
+        m_timestampLabel->setAlignment(Qt::AlignCenter);
+
+        // 显示完整的文字内容，并启用自动换行
+        m_textLabel->setText(moment.text());
+        m_textLabel->setStyleSheet("font-size: 12px; color: #555;");
+        m_textLabel->setWordWrap(true);
+
+    } else {
+        // --- 有图片模式 ---
+        m_imageLabel->setVisible(true); // 显示图片控件
+        m_imageLabel->setAlignment(Qt::AlignCenter);
+        m_imageLabel->setFixedSize(144, 80);
         QPixmap pixmap(moment.imagePaths().first());
         m_imageLabel->setPixmap(pixmap.scaled(m_imageLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    } else {
-        m_imageLabel->setText(tr("无图片"));
-        m_imageLabel->setStyleSheet("background-color: #f0f0f0; border-radius: 3px; color: gray;");
+
+        // 时间戳标签显示详细时间，并靠左对齐
+        m_timestampLabel->setText(moment.timestamp().toString("yyyy-MM-dd hh:mm"));
+        m_timestampLabel->setStyleSheet("font-size: 11px; color: gray;");
+        m_timestampLabel->setAlignment(Qt::AlignLeft);
+
+        // 【智能截断逻辑】解决文字穿模问题
+        QString originalText = moment.text().replace('\n', ' '); // 将换行符替换为空格，确保是单行
+        QFontMetrics metrics(m_textLabel->font());
+        // elidedText会根据可用宽度（这里是144像素）自动截断文本并在末尾加上 "..."
+        QString elidedText = metrics.elidedText(originalText, Qt::ElideRight, 144);
+
+        m_textLabel->setText(elidedText);
+        m_textLabel->setStyleSheet("font-size: 12px; color: #555;");
+        m_textLabel->setWordWrap(false); // 摘要不换行
     }
-    mainLayout->addWidget(m_imageLabel);
 
-    // 时间戳标签，将局部变量赋值给成员变量
-    m_timestampLabel = new QLabel(moment.timestamp().toString("yyyy-MM-dd"));
-    m_timestampLabel->setStyleSheet("font-size: 11px; color: gray;");
-    mainLayout->addWidget(m_timestampLabel);
-
-    // 文字摘要，将局部变量赋值给成员变量
-    m_textLabel = new QLabel(moment.text());
-    m_textLabel->setStyleSheet("font-size: 12px;");
-    mainLayout->addWidget(m_textLabel, 1);
+    // 4. 设置完整的提示信息（鼠标悬停时显示完整内容）
+    this->setToolTip(moment.text());
 
     // 【新增】创建悬浮的删除按钮
     m_deleteButton = new QToolButton(this); // **父对象是 this (MomentCardWidget)**
