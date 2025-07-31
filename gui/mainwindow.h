@@ -68,6 +68,7 @@ private slots:
     void handleTaskDoubleClick(QListWidgetItem* item);
     void onEditTodo();
     void onDeleteTodo();
+    void onTodoUnlinked(const QUuid& anniversaryId);
 
     // Anniversary Module Slots
     void refreshAnniversaryView();

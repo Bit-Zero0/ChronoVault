@@ -337,3 +337,16 @@ void AnniversaryService::deleteMoment(const QUuid& anniversaryId, const QUuid& m
         }
     }
 }
+
+void AnniversaryService::unmarkAsAddedToTodo(const QUuid& id)
+{
+    if (auto* item = findItemById(id)) {
+        // 检查状态是否真的需要改变，避免不必要的操作
+        if (item->isAddedToTodo()) {
+            item->setAddedToTodo(false);
+            qDebug() << "[AnniversaryService] Unmarked item" << id << "as added to todo.";
+            emit itemsChanged(); // 发射信号，通知UI刷新
+            saveData();
+        }
+    }
+}

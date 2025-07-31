@@ -246,9 +246,10 @@ void MainWindow::setupConnections() {
     connect(m_anniversaryDetailView, &AnniversaryDetailView::momentAdded, this, &MainWindow::onMomentAdded);
     connect(m_anniversaryDetailView, &AnniversaryDetailView::refreshRequested, this, &MainWindow::safeRefreshAnniversaryDetail);
 
-
-
+    connect(m_todoService, &TodoService::todoUnlinkedFromAnniversary, this, &MainWindow::onTodoUnlinked);
 }
+
+
 
 void MainWindow::onAnniversaryMomentUpdated(const QUuid& anniversaryId, const Moment& moment)
 {
@@ -998,4 +999,12 @@ void MainWindow::onModuleButtonClicked(int id)
     m_leftContentStack->setCurrentIndex(id);
     m_rightContentStack->setCurrentIndex(id);
     qDebug() << "Switched to module with ID:" << id;
+}
+
+
+void MainWindow::onTodoUnlinked(const QUuid& anniversaryId)
+{
+    qDebug() << "[MainWindow] Received todoUnlinked signal. Commanding AnniversaryService.";
+    // 向 AnniversaryService 下达指令
+    m_anniversaryService->unmarkAsAddedToTodo(anniversaryId);
 }

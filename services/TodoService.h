@@ -49,6 +49,7 @@ signals:
     // 当数据模型发生重大变化时，发射这些信号
     void listsChanged(); // 列表本身（增、删、改名）发生变化
     void tasksChanged(const QUuid& listId); // 某个列表中的任务发生变化
+    void todoUnlinkedFromAnniversary(const QUuid& anniversaryId); //当一个与纪念日关联的待办被删除时，发射此信号
 
 public slots:
     void checkReminders();

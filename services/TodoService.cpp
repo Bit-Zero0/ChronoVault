@@ -136,9 +136,25 @@ bool TodoService::addTodoToList(const QUuid& listId, const TodoItem& todo) {
 
 bool TodoService::deleteTodoFromList(const QUuid& listId, const QUuid& todoId) {
     if (auto* list = findListById(listId)) {
+        // 【核心修正】在删除前，检查并记录其关联的纪念日ID
+        QUuid sourceIdToUnlink;
+        for (const auto& item : list->items) {
+            if (item.id() == todoId && !item.sourceAnniversaryId().isNull()) {
+                sourceIdToUnlink = item.sourceAnniversaryId();
+                break;
+            }
+        }
+
         int initialCount = list->items.count();
         list->items.removeIf([todoId](const TodoItem& item){ return item.id() == todoId; });
+
         if (list->items.count() < initialCount) {
+            // 如果删除成功，并且之前记录了关联ID，则发射信号
+            if (!sourceIdToUnlink.isNull()) {
+                qDebug() << "[TodoService] Emitting todoUnlinkedFromAnniversary for ID:" << sourceIdToUnlink;
+                emit todoUnlinkedFromAnniversary(sourceIdToUnlink);
+            }
+
             emit tasksChanged(listId);
             saveData();
             return true;
