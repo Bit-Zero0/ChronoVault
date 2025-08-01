@@ -13,6 +13,7 @@
 #include "gui/CompletedHeaderWidget.h"
 #include "core/SubTask.h"
 #include "gui/ReminderDialog.h"
+#include "gui/SettingsDialog.h"
 
 
 
@@ -247,6 +248,8 @@ void MainWindow::setupConnections() {
     connect(m_anniversaryDetailView, &AnniversaryDetailView::refreshRequested, this, &MainWindow::safeRefreshAnniversaryDetail);
 
     connect(m_todoService, &TodoService::todoUnlinkedFromAnniversary, this, &MainWindow::onTodoUnlinked);
+
+    connect(m_settingsButton, &QToolButton::clicked, this, &MainWindow::onSettingsButtonClicked);
 }
 
 
@@ -1007,4 +1010,10 @@ void MainWindow::onTodoUnlinked(const QUuid& anniversaryId)
     qDebug() << "[MainWindow] Received todoUnlinked signal. Commanding AnniversaryService.";
     // 向 AnniversaryService 下达指令
     m_anniversaryService->unmarkAsAddedToTodo(anniversaryId);
+}
+
+void MainWindow::onSettingsButtonClicked()
+{
+    SettingsDialog dialog(this);
+    dialog.exec();
 }

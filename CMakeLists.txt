@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # 使用一个清晰、完整的命令找到所有需要的 Qt6 模块
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Concurrent Multimedia)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Concurrent Multimedia Network)
 
 # 定义源文件列表
 set(PROJECT_SOURCES
@@ -72,6 +72,8 @@ qt_add_executable(ChronoVault
     gui/ReminderDialog.h gui/ReminderDialog.cpp
     style.qss
     gui/ZoomableGraphicsView.h gui/ZoomableGraphicsView.cpp
+    gui/SettingsDialog.h gui/SettingsDialog.cpp
+    services/NetworkService.h services/NetworkService.cpp
 
 
 
@@ -90,6 +92,7 @@ target_link_libraries(ChronoVault PRIVATE
     Qt6::Widgets
     Qt6::Concurrent
     Qt6::Multimedia
+    Qt6::Network
 )
 
 # --- 以下为平台相关的设置 ---

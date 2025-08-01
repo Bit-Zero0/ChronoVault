@@ -92,6 +92,7 @@ private slots:
     void onMomentDeleteRequested(const QUuid& anniversaryId, const QUuid& momentId);
     void onAnniversaryDataChanged(); // 【新增】用于响应数据变化的槽
     void onMomentAdded(const QUuid& anniversaryId, const Moment& newMoment);
+    void onSettingsButtonClicked();
 
 
 
