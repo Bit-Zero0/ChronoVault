@@ -1,0 +1,108 @@
+name: ChronoVault CI/CD
+
+# 触发条件：推送到main分支、PR到main分支或创建标签时触发
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        qt_version: [6.9.1]  # 匹配你项目使用的Qt版本
+
+    steps:
+    - uses: actions/checkout@v3
+
+    # 安装Qt
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        qt-version: ${{ matrix.qt_version }}
+        modules: 'qtcore qtgui qtwidgets qtconcurrent qtmultimedia qtnetwork'  # 项目所需的Qt模块
+
+    # Windows构建步骤
+    - name: Build on Windows
+      if: matrix.os == 'windows-latest'
+      run: |
+        mkdir build
+        cd build
+        cmake .. -G "Visual Studio 17 2022" -DCMAKE_BUILD_TYPE=Release
+        cmake --build . --config Release --parallel
+        # 使用windeployqt部署依赖
+        windeployqt --release .\Release\ChronoVault.exe
+        # 复制样式文件
+        copy ..\style.qss .\Release\
+        # 打包成ZIP
+        7z a ..\ChronoVault-windows-${{ github.ref_name }}.zip .\Release\*
+
+    # Linux构建步骤
+    - name: Build on Linux
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        # 安装额外依赖
+        sudo apt-get install -y libgl1-mesa-dev libxkbcommon-x11-0
+        mkdir build
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release
+        make -j$(nproc)
+        # 复制样式文件
+        cp ../style.qss .
+        # 使用linuxdeployqt打包
+        wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
+        chmod +x linuxdeployqt-continuous-x86_64.AppImage
+        ./linuxdeployqt-continuous-x86_64.AppImage ChronoVault -appimage -extra-plugins=iconengines,platformthemes/libqgtk3.so
+        # 重命名AppImage
+        mv ChronoVault*.AppImage ../ChronoVault-linux-${{ github.ref_name }}.AppImage
+
+    # macOS构建步骤
+    - name: Build on macOS
+      if: matrix.os == 'macos-latest'
+      run: |
+        mkdir build
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release
+        make -j$(sysctl -n hw.ncpu)
+        # 使用macdeployqt生成DMG
+        macdeployqt ChronoVault.app -dmg -verbose=2
+        # 复制样式文件到应用包内
+        cp ../style.qss ChronoVault.app/Contents/MacOS/
+        # 重命名DMG
+        mv ChronoVault.dmg ../ChronoVault-macos-${{ github.ref_name }}.dmg
+
+    # 上传构建产物
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ChronoVault-${{ matrix.os }}
+        path: |
+          ChronoVault-windows-*.zip
+          ChronoVault-linux-*.AppImage
+          ChronoVault-macos-*.dmg
+
+  # 发布到GitHub Releases（仅当推送标签时）
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ChronoVault-ubuntu-latest/ChronoVault-linux-*.AppImage
+            ChronoVault-windows-latest/ChronoVault-windows-*.zip
+            ChronoVault-macos-latest/ChronoVault-macos-*.dmg
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
